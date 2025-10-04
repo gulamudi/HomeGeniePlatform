@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/app_theme.dart';
+import 'package:shared/shared.dart';
 
 class BookingDetailsPage extends ConsumerWidget {
   final String bookingId;

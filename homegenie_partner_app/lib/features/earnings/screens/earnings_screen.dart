@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 import '../providers/earnings_provider.dart';
 
 class EarningsScreen extends ConsumerWidget {

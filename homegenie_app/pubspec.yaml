@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  shared:
+    path: ../shared
 
   # State Management
   flutter_riverpod: ^2.4.0

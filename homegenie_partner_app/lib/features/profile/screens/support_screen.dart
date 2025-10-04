@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../shared/theme/app_theme.dart';
+import 'package:shared/shared.dart';
 import '../../../../core/storage/storage_service.dart';
 
 class SplashPage extends ConsumerStatefulWidget {

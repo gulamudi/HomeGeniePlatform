@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 import 'home_page.dart';
 import '../../../booking/presentation/pages/bookings_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 
 class DocumentVerificationScreen extends ConsumerStatefulWidget {

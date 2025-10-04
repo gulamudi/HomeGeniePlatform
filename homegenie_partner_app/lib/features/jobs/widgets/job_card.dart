@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 import '../../../core/models/job.dart';
 import '../../../core/constants/app_constants.dart';
 

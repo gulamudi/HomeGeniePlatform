@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared/config/app_config.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/storage_service.dart';
 import '../../../core/models/partner.dart';
-import '../../../shared/config/app_config.dart';
 
 final apiClientProvider = Provider((ref) => ApiClient());
 final storageServiceProvider = Provider((ref) => StorageService());

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 
 class EditAddressPage extends ConsumerWidget {
   final String addressId;

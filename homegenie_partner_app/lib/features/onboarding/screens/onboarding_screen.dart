@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/theme/app_theme.dart';
+import 'package:shared/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 
 class OnboardingScreen extends StatelessWidget {
