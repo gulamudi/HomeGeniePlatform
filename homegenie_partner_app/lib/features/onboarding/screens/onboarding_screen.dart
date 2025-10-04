@@ -12,120 +12,143 @@ class OnboardingScreen extends StatelessWidget {
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppTheme.paddingLarge),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 40),
+                  Text(
+                    'HomeGenie Partner',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.help_outline),
+                    onPressed: () {},
+                    color: AppTheme.textSecondary,
+                  ),
+                ],
+              ),
+
               const Spacer(),
 
-              // Icon
-              Icon(
-                Icons.handshake,
-                size: 100,
-                color: AppTheme.primaryBlue,
+              // Animated icon with pulse effect
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Pulse animation circles
+                  Container(
+                    width: 128,
+                    height: 128,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.primaryBlue.withOpacity(0.2),
+                    ),
+                  ),
+                  Container(
+                    width: 128,
+                    height: 128,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.primaryBlue.withOpacity(0.3),
+                    ),
+                    child: const Icon(
+                      Icons.verified_user,
+                      size: 64,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 32),
 
               // Welcome Title
               Text(
-                'Welcome to\nHomeGenie Partner!',
-                style: Theme.of(context).textTheme.displaySmall,
+                'Welcome to HomeGenie',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                 textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               Text(
-                'Start earning by providing quality home services',
+                'Join our network of trusted professionals and start earning on your schedule.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
+                      color: AppTheme.textSecondary,
+                    ),
                 textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 48),
-
-              // Features
-              _buildFeatureItem(
-                context,
-                Icons.work,
-                'Get Jobs',
-                'Receive job requests based on your skills and location',
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildFeatureItem(
-                context,
-                Icons.attach_money,
-                'Earn Money',
-                'Complete jobs and get paid directly to your account',
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildFeatureItem(
-                context,
-                Icons.schedule,
-                'Flexible Hours',
-                'Work on your own schedule and availability',
+                maxLines: 2,
               ),
 
               const Spacer(),
 
               // Continue button
-              ElevatedButton(
-                onPressed: () => context.go(AppConstants.routeDocumentVerification),
-                child: const Text('Get Started'),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => context.go(AppConstants.routeDocumentVerification),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Start Verification',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Terms and privacy
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text.rich(
+                  TextSpan(
+                    text: 'By continuing, you agree to our ',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
+                    children: [
+                      TextSpan(
+                        text: 'Terms of Service',
+                        style: TextStyle(
+                          color: AppTheme.primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: TextStyle(
+                          color: AppTheme.primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFeatureItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String description,
-  ) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryBlue.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          ),
-          child: Icon(
-            icon,
-            color: AppTheme.primaryBlue,
-            size: 28,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

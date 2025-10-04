@@ -7,10 +7,14 @@ import '../../features/onboarding/screens/document_verification_screen.dart';
 import '../../features/onboarding/screens/profile_setup_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/jobs/screens/job_details_screen.dart';
+import '../../features/jobs/screens/job_in_progress_screen.dart';
+import '../../features/jobs/screens/job_completed_screen.dart';
+import '../../features/jobs/screens/cancel_job_screen.dart';
 import '../../features/earnings/screens/earnings_screen.dart';
 import '../../features/preferences/screens/preferences_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/support_screen.dart';
+import '../../features/support/screens/support_screen.dart' as support;
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
 
@@ -78,6 +82,41 @@ class AppRouter {
         builder: (context, state) {
           final jobId = state.uri.queryParameters['jobId'] ?? '';
           return JobDetailsScreen(jobId: jobId);
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeJobStarted,
+        builder: (context, state) {
+          final jobId = state.uri.queryParameters['jobId'] ?? '';
+          final serviceName = state.uri.queryParameters['serviceName'] ?? 'Service';
+          final customerName = state.uri.queryParameters['customerName'] ?? 'Customer';
+          return JobInProgressScreen(
+            jobId: jobId,
+            serviceName: serviceName,
+            customerName: customerName,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeJobCompleted,
+        builder: (context, state) {
+          final jobId = state.uri.queryParameters['jobId'] ?? '';
+          final serviceName = state.uri.queryParameters['serviceName'] ?? 'Service';
+          final durationMinutes = int.tryParse(state.uri.queryParameters['duration'] ?? '0') ?? 0;
+          final earnings = double.tryParse(state.uri.queryParameters['earnings'] ?? '0') ?? 0;
+          return JobCompletedScreen(
+            jobId: jobId,
+            serviceName: serviceName,
+            duration: Duration(minutes: durationMinutes),
+            earnings: earnings,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeCancelJob,
+        builder: (context, state) {
+          final jobId = state.uri.queryParameters['jobId'] ?? '';
+          return CancelJobScreen(jobId: jobId);
         },
       ),
       GoRoute(

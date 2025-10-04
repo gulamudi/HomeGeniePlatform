@@ -4,6 +4,8 @@ import 'package:shared/theme/app_theme.dart';
 import 'package:shared/config/app_config.dart';
 import 'core/storage/storage_service.dart';
 import 'core/router/app_router.dart';
+import 'core/services/supabase_service.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +13,12 @@ void main() async {
   // Initialize storage
   final storage = StorageService();
   await storage.init();
+
+  // Initialize Supabase
+  await SupabaseService.instance.init();
+
+  // Initialize notifications
+  await NotificationService.instance.init();
 
   runApp(
     ProviderScope(

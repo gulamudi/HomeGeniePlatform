@@ -23,13 +23,21 @@ class JobDetailsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Job Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.support_agent),
-            onPressed: () => context.push(AppConstants.routeSupport),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Job Details',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-        ],
+        ),
       ),
       body: jobAsync.when(
         data: (job) => _buildJobDetails(context, ref, job),
@@ -49,205 +57,408 @@ class JobDetailsScreen extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: jobAsync.when(
+        data: (job) => _buildBottomActions(context, job),
+        loading: () => const SizedBox.shrink(),
+        error: (_, __) => const SizedBox.shrink(),
+      ),
     );
   }
 
   Widget _buildJobDetails(BuildContext context, WidgetRef ref, Job job) {
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Customer info card
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(AppTheme.paddingLarge),
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
-                  child: Text(
-                    job.customerName[0].toUpperCase(),
-                    style: const TextStyle(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // SERVICE section
+            _buildSectionHeader('SERVICE'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.home_repair_service,
                       color: AppTheme.primaryBlue,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  job.customerName,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Booking ID: ${job.bookingId}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (job.customerPhone != null &&
-                    job.status != AppConstants.jobStatusPending) ...[
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () => _makeCall(job.customerPhone!),
-                        icon: const Icon(Icons.call),
-                        label: const Text('Call'),
+                      Text(
+                        job.serviceName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: () => _sendMessage(job.customerPhone!),
-                        icon: const Icon(Icons.message),
-                        label: const Text('Message'),
+                      Text(
+                        'Cleaning',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 24),
 
-          const SizedBox(height: 12),
-
-          // Job details card
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(AppTheme.paddingLarge),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Job Details',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                _buildDetailRow(
-                  context,
-                  Icons.home_repair_service,
-                  'Service',
-                  job.serviceName,
-                ),
-                const SizedBox(height: 12),
-                _buildDetailRow(
-                  context,
-                  Icons.calendar_today,
-                  'Date',
-                  DateFormat('dd MMMM yyyy').format(job.scheduledDate),
-                ),
-                const SizedBox(height: 12),
-                _buildDetailRow(
-                  context,
-                  Icons.access_time,
-                  'Time',
-                  job.scheduledTime ?? 'Not set',
-                ),
-                const SizedBox(height: 12),
-                _buildDetailRow(
-                  context,
-                  Icons.location_on,
-                  'Address',
-                  job.address,
-                ),
-                if (job.instructions != null) ...[
-                  const SizedBox(height: 12),
-                  Divider(height: 1, color: AppTheme.dividerColor),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context,
-                    Icons.note,
-                    'Instructions',
-                    job.instructions!,
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Payment details card
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(AppTheme.paddingLarge),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Payment Details',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Service Amount',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '₹${job.amount.toStringAsFixed(0)}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Your Earning (80%)',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.successGreen,
-                      ),
-                    ),
-                    Text(
-                      '₹${(job.partnerEarning ?? job.amount * 0.8).toStringAsFixed(0)}',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: AppTheme.successGreen,
+            // CUSTOMER section
+            _buildSectionHeader('CUSTOMER'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.grey[300],
+                    child: Text(
+                      job.customerName[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job.customerName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (job.customerPhone != null)
+                        Text(
+                          job.customerPhone!,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(height: 24),
 
-          const SizedBox(height: 80), // Space for bottom buttons
-        ],
+            // ADDRESS section
+            _buildSectionHeader('ADDRESS'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.location_on,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'View on Map',
+                          style: TextStyle(
+                            color: AppTheme.primaryBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          job.address,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // DATE & TIME section
+            _buildSectionHeader('DATE & TIME'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '${DateFormat('MMMM dd, yyyy').format(job.scheduledDate)}, ${job.scheduledTime ?? 'Time not set'}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // INSTRUCTIONS section
+            if (job.instructions != null) ...[
+              _buildSectionHeader('INSTRUCTIONS'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  job.instructions!,
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // PAYOUT section
+            _buildSectionHeader('PAYOUT'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.payments,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '\$${(job.partnerEarning ?? job.amount * 0.8).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Call and Message buttons
+            if (job.customerPhone != null && job.status != AppConstants.jobStatusPending) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _makeCall(job.customerPhone!),
+                      icon: const Icon(Icons.call, size: 20),
+                      label: const Text('Call'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryBlue,
+                        backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _sendMessage(job.customerPhone!),
+                      icon: const Icon(Icons.chat_bubble, size: 20),
+                      label: const Text('Message'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryBlue,
+                        backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 200), // Space for bottom actions
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDetailRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: AppTheme.iconSecondary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[600],
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActions(BuildContext context, Job job) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: Colors.black12),
+        ),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  context.push('${AppConstants.routeJobStarted}?jobId=${job.id}&serviceName=${Uri.encodeComponent(job.serviceName)}&customerName=${Uri.encodeComponent(job.customerName)}');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                  elevation: 8,
+                  shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Start Job',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: TextButton(
+                onPressed: () {
+                  context.push('${AppConstants.routeCancelJob}?jobId=$jobId');
+                },
+                child: const Text(
+                  'Cancel Job',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.errorRed,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Bottom navigation
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.home, 'Home', false),
+                _buildNavItem(Icons.work, 'Jobs', true),
+                _buildNavItem(Icons.account_balance_wallet, 'Wallet', false),
+                _buildNavItem(Icons.person, 'Profile', false),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool isActive) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: isActive ? AppTheme.primaryBlue : Colors.grey,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? AppTheme.primaryBlue : Colors.grey,
           ),
         ),
       ],

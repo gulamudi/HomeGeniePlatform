@@ -42,29 +42,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text('My Jobs'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            // Show notifications
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.person_outline),
-          onPressed: () => context.push(AppConstants.routeProfile),
-        ),
-      ],
-      bottom: TabBar(
-        controller: _tabController,
-        tabs: const [
-          Tab(text: "Today's Jobs"),
-          Tab(text: 'Upcoming'),
-          Tab(text: 'History'),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundImage: NetworkImage(
+              'https://via.placeholder.com/150',
+            ),
+          ),
+          Expanded(
+            child: Text(
+              'HomeGenie Partner',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+          const SizedBox(width: 32),
         ],
-        labelColor: AppTheme.primaryBlue,
-        unselectedLabelColor: AppTheme.textSecondary,
-        indicatorColor: AppTheme.primaryBlue,
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Column(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.black12,
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: "Today's Jobs"),
+                  Tab(text: 'Upcoming'),
+                  Tab(text: 'History'),
+                ],
+                labelColor: AppTheme.primaryBlue,
+                unselectedLabelColor: AppTheme.textSecondary,
+                labelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                indicatorColor: AppTheme.primaryBlue,
+                indicatorWeight: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -187,28 +223,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: _currentBottomNavIndex,
-      onTap: (index) {
-        setState(() => _currentBottomNavIndex = index);
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.work_outline),
-          activeIcon: Icon(Icons.work),
-          label: 'Jobs',
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.black12, width: 1),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.attach_money),
-          activeIcon: Icon(Icons.attach_money),
-          label: 'Earnings',
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentBottomNavIndex,
+        onTap: (index) {
+          setState(() => _currentBottomNavIndex = index);
+          if (index == 1) {
+            context.push(AppConstants.routeEarnings);
+          } else if (index == 3) {
+            context.push(AppConstants.routeProfile);
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppTheme.primaryBlue,
+        unselectedItemColor: AppTheme.textSecondary,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          activeIcon: Icon(Icons.settings),
-          label: 'Preferences',
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
         ),
-      ],
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.work_outline),
+            activeIcon: Icon(Icons.work),
+            label: 'Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            activeIcon: Icon(Icons.account_balance_wallet),
+            label: 'Wallet',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }
