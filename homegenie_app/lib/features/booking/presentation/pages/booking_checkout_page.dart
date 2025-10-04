@@ -53,7 +53,7 @@ class _BookingCheckoutPageState extends ConsumerState<BookingCheckoutPage> {
       ref.read(bookingProvider.notifier).setPaymentMethod(_selectedPaymentMethod!);
 
       // Create booking
-      final bookingId = await ref.read(bookingProvider.notifier).createBooking();
+      final bookingId = await ref.read(bookingProvider.notifier).createBooking(ref);
 
       if (bookingId != null && mounted) {
         // Navigate to confirmation page

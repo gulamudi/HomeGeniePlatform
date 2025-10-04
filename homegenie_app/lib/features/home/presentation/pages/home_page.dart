@@ -29,6 +29,120 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
     super.dispose();
   }
 
+  void _showAddressSelector(BuildContext context, WidgetRef ref) {
+    final addresses = ref.read(addressesProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.borderColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Select Address',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: addresses.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final address = addresses[index];
+                  return InkWell(
+                    onTap: () {
+                      ref.read(addressesProvider.notifier).setDefaultAddress(address.id!);
+                      Navigator.pop(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        children: [
+                          Icon(
+                            address.is_default ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            color: address.is_default ? AppTheme.primaryBlue : AppTheme.textSecondary,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${address.flat_house_no}, ${address.street_name}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  '${address.area}, ${address.city}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.push('/addresses/add');
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add New Address'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final defaultAddress = ref.watch(defaultAddressProvider);
@@ -39,44 +153,13 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
       backgroundColor: AppTheme.backgroundColor,
       body: Column(
         children: [
-          // App Bar
-          Container(
-            color: Colors.white,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 16,
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(width: 48),
-                const Text(
-                  'HomeGenie',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: () {
-                    // TODO: Navigate to settings
-                  },
-                  color: AppTheme.textPrimary,
-                ),
-              ],
-            ),
-          ),
-
-          // Address Card
+          // Address Card at the top
+          SizedBox(height: MediaQuery.of(context).padding.top + 16),
           if (defaultAddress != null)
             Padding(
               padding: const EdgeInsets.all(16),
               child: InkWell(
-                onTap: () => context.push('/addresses'),
+                onTap: () => _showAddressSelector(context, ref),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 child: Container(
                   padding: const EdgeInsets.all(12),
@@ -125,9 +208,21 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: AppTheme.textPrimary,
+                      GestureDetector(
+                        onTap: () => context.push('/profile'),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                       ),
                     ],
                   ),

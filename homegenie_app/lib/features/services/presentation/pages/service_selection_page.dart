@@ -24,45 +24,8 @@ class ServiceSelectionPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'HomeGenie',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () {
-                context.go('/');
-                // Navigate to index 2 (Profile) in main navigation
-              },
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: AppTheme.primaryBlue,
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
@@ -103,41 +66,6 @@ class ServiceSelectionPage extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.backgroundColor.withOpacity(0.8),
-          border: const Border(
-            top: BorderSide(color: AppTheme.borderColor, width: 1),
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _BottomNavItem(
-                  icon: Icons.home,
-                  label: 'Home',
-                  isActive: true,
-                  onTap: () => context.go('/'),
-                ),
-                _BottomNavItem(
-                  icon: Icons.calendar_today,
-                  label: 'Bookings',
-                  isActive: false,
-                  onTap: () => context.go('/'),
-                ),
-                _BottomNavItem(
-                  icon: Icons.person,
-                  label: 'Profile',
-                  isActive: false,
-                  onTap: () => context.go('/'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -205,49 +133,6 @@ class _ServiceCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _BottomNavItem({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 32,
-            child: Icon(
-              icon,
-              color: isActive ? AppTheme.primaryBlue : AppTheme.iconSecondary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              color: isActive ? AppTheme.primaryBlue : AppTheme.textSecondary,
-            ),
-          ),
-        ],
       ),
     );
   }

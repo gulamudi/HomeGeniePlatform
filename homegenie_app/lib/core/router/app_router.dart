@@ -158,6 +158,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // Profile Routes
       GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
         path: '/profile/edit',
         name: 'edit-profile',
         builder: (context, state) => const EditProfilePage(),

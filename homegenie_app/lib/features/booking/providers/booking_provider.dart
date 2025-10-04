@@ -86,7 +86,12 @@ class BookingNotifier extends StateNotifier<BookingState> {
     state = state.copyWith(specialInstructions: instructions);
   }
 
-  Future<String?> createBooking() async {
+  Future<String?> createBooking(WidgetRef ref) async {
+    // Validate required fields
+    if (state.serviceId == null || state.selectedDate == null) {
+      throw Exception('Service and date are required');
+    }
+
     try {
       // Prepare address data
       final addressData = state.selectedAddress != null
@@ -117,13 +122,65 @@ class BookingNotifier extends StateNotifier<BookingState> {
 
       if (response.success && response.data != null) {
         final bookingId = response.data['id'] ?? response.data['booking_id'];
+
+        // Add the new booking to the bookings list
+        final newBooking = Booking(
+          id: bookingId?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          customer_id: 'customer1',
+          service_id: state.serviceId!,
+          status: 'confirmed',
+          scheduled_date: state.selectedDate!,
+          duration_hours: state.durationHours ?? 1.0,
+          address: addressData ?? {},
+          total_amount: state.totalAmount ?? 0.0,
+          payment_method: state.paymentMethod ?? 'online',
+          payment_status: 'paid',
+          special_instructions: state.specialInstructions,
+          created_at: DateTime.now(),
+          updated_at: DateTime.now(),
+        );
+
+        ref.read(bookingsProvider.notifier).addBooking(newBooking);
+
         return bookingId?.toString();
       }
       return null;
     } catch (e) {
       // Fallback to mock implementation for development
       await Future.delayed(const Duration(seconds: 1));
-      return DateTime.now().millisecondsSinceEpoch.toString();
+      final bookingId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Add the new booking to the bookings list
+      final addressData = state.selectedAddress != null
+          ? {
+              'flat_house_no': state.selectedAddress!.flat_house_no,
+              'building_apartment_name': state.selectedAddress!.building_apartment_name,
+              'street_name': state.selectedAddress!.street_name,
+              'area': state.selectedAddress!.area,
+              'city': state.selectedAddress!.city,
+              'pin_code': state.selectedAddress!.pin_code,
+            }
+          : {};
+
+      final newBooking = Booking(
+        id: bookingId,
+        customer_id: 'customer1',
+        service_id: state.serviceId!,
+        status: 'confirmed',
+        scheduled_date: state.selectedDate!,
+        duration_hours: state.durationHours ?? 1.0,
+        address: addressData,
+        total_amount: state.totalAmount ?? 0.0,
+        payment_method: state.paymentMethod ?? 'online',
+        payment_status: 'paid',
+        special_instructions: state.specialInstructions,
+        created_at: DateTime.now(),
+        updated_at: DateTime.now(),
+      );
+
+      ref.read(bookingsProvider.notifier).addBooking(newBooking);
+
+      return bookingId;
     }
   }
 
@@ -215,6 +272,10 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
         updated_at: DateTime.now().subtract(const Duration(hours: 12)),
       ),
     ];
+  }
+
+  void addBooking(Booking booking) {
+    state = [booking, ...state];
   }
 
   Future<void> cancelBooking(String bookingId, {String? reason}) async {

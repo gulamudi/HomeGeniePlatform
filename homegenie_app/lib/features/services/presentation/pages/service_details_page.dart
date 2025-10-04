@@ -79,7 +79,7 @@ class ServiceDetailsPage extends ConsumerWidget {
             child: ElevatedButton(
               onPressed: () {
                 ref.read(bookingProvider.notifier).setService(serviceId, service.base_price);
-                context.push('/booking/select-date-time?serviceId=$serviceId');
+                context.push('/booking/select-date-time?serviceId=$serviceId&basePrice=${service.base_price}');
               },
               child: const Text('Book Now'),
             ),

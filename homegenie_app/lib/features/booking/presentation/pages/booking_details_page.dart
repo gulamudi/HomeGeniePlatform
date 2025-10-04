@@ -271,7 +271,7 @@ class BookingDetailsPage extends ConsumerWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            context.push('/rate-partner/${booking.id}');
+                            context.push('/booking/${booking.id}/rate');
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryBlue,
@@ -292,7 +292,7 @@ class BookingDetailsPage extends ConsumerWidget {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () {
-                                context.push('/reschedule-booking/${booking.id}');
+                                context.push('/booking/reschedule/${booking.id}');
                               },
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
@@ -315,7 +315,7 @@ class BookingDetailsPage extends ConsumerWidget {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                context.push('/cancel-booking/${booking.id}');
+                                context.push('/booking/cancel/${booking.id}');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.errorRed,
