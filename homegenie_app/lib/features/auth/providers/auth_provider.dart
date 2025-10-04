@@ -56,6 +56,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<Map<String, dynamic>> requestOtp({
+    required String phone,
+    required String userType,
+  }) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      // In a real app, this would call the API to send OTP
+      // For now, we just store the phone number and simulate success
+      await StorageService.setString('pending_phone', phone);
+      
+      // Return mock response similar to what might come from backend
+      state = state.copyWith(isLoading: false);
+      return {
+        'success': true,
+        'sessionId': DateTime.now().millisecondsSinceEpoch.toString(),
+      };
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
   Future<bool> login(String phoneNumber) async {
     state = state.copyWith(isLoading: true);
     try {

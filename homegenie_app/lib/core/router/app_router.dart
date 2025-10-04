@@ -6,6 +6,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/otp_verification_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/main_navigation_page.dart';
+import '../../features/services/presentation/pages/service_selection_page.dart';
 import '../../features/services/presentation/pages/service_details_page.dart';
 import '../../features/booking/presentation/pages/select_date_time_page.dart';
 import '../../features/booking/presentation/pages/select_address_page.dart';
@@ -14,6 +15,9 @@ import '../../features/booking/presentation/pages/booking_checkout_page.dart';
 import '../../features/booking/presentation/pages/booking_confirmation_page.dart';
 import '../../features/booking/presentation/pages/bookings_page.dart';
 import '../../features/booking/presentation/pages/booking_details_page.dart';
+import '../../features/booking/presentation/pages/reschedule_booking_page.dart';
+import '../../features/booking/presentation/pages/cancel_booking_page.dart';
+import '../../features/booking/presentation/pages/rate_partner_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/address/presentation/pages/addresses_page.dart';
@@ -61,6 +65,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       // Service Routes
+      GoRoute(
+        path: '/service-selection',
+        name: 'service-selection',
+        builder: (context, state) => const ServiceSelectionPage(),
+      ),
       GoRoute(
         path: '/service/:id',
         name: 'service-details',
@@ -110,6 +119,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final bookingId = state.pathParameters['id']!;
           return BookingDetailsPage(bookingId: bookingId);
+        },
+      ),
+
+      // Reschedule Booking
+      GoRoute(
+        path: '/booking/reschedule/:id',
+        name: 'reschedule-booking',
+        builder: (context, state) {
+          final bookingId = state.pathParameters['id']!;
+          return RescheduleBookingPage(bookingId: bookingId);
+        },
+      ),
+
+      // Cancel Booking
+      GoRoute(
+        path: '/booking/cancel/:id',
+        name: 'cancel-booking',
+        builder: (context, state) {
+          final bookingId = state.pathParameters['id']!;
+          return CancelBookingPage(bookingId: bookingId);
+        },
+      ),
+
+      // Rate Partner
+      GoRoute(
+        path: '/booking/:id/rate',
+        name: 'rate-partner',
+        builder: (context, state) {
+          final bookingId = state.pathParameters['id']!;
+          return RatePartnerPage(bookingId: bookingId);
         },
       ),
 

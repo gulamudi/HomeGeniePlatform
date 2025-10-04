@@ -107,3 +107,5 @@ app.*.map.json
 .DS_Store
 Thumbs.db
 .aider*
+
+**/screens_and_code/

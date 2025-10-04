@@ -3,16 +3,17 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Shared theme configuration for both HomeGenie Customer and Partner apps
 class AppTheme {
-  // Primary Colors
-  static const Color primaryBlue = Color(0xFF0066FF);
-  static const Color primaryDark = Color(0xFF0052CC);
+  // Primary Colors (from design: #1173d4)
+  static const Color primaryBlue = Color(0xFF1173D4);
+  static const Color primaryDark = Color(0xFF0E5AA8);
   static const Color primaryLight = Color(0xFF4D94FF);
 
   // Secondary Colors
   static const Color secondaryColor = Color(0xFF00D9FF);
 
-  // Background Colors
-  static const Color backgroundColor = Color(0xFFF5F7FA);
+  // Background Colors (from design)
+  static const Color backgroundColor = Color(0xFFF6F7F8); // background-light from HTML
+  static const Color backgroundDark = Color(0xFF101922); // background-dark from HTML
   static const Color cardBackground = Colors.white;
   static const Color surfaceColor = Colors.white;
 
@@ -93,88 +94,88 @@ class AppTheme {
         backgroundColor: Colors.white,
         foregroundColor: textPrimary,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.manrope(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: textPrimary,
         ),
         iconTheme: const IconThemeData(color: iconPrimary),
       ),
 
-      // Text Theme
-      textTheme: GoogleFonts.interTextTheme(
+      // Text Theme (using Manrope as per design)
+      textTheme: GoogleFonts.manropeTextTheme(
         TextTheme(
-          displayLarge: GoogleFonts.inter(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
+          displayLarge: GoogleFonts.manrope(
+            fontSize: 36, // h1 from design
+            fontWeight: FontWeight.w800, // extra bold
             color: textPrimary,
           ),
-          displayMedium: GoogleFonts.inter(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+          displayMedium: GoogleFonts.manrope(
+            fontSize: 28, // h2 from design
+            fontWeight: FontWeight.w700, // bold
             color: textPrimary,
           ),
-          displaySmall: GoogleFonts.inter(
+          displaySmall: GoogleFonts.manrope(
             fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             color: textPrimary,
           ),
-          headlineLarge: GoogleFonts.inter(
+          headlineLarge: GoogleFonts.manrope(
             fontSize: 22,
             fontWeight: FontWeight.w600,
             color: textPrimary,
           ),
-          headlineMedium: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          headlineMedium: GoogleFonts.manrope(
+            fontSize: 20, // h3 from design
+            fontWeight: FontWeight.w700, // bold
             color: textPrimary,
           ),
-          headlineSmall: GoogleFonts.inter(
+          headlineSmall: GoogleFonts.manrope(
             fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: textPrimary,
+          ),
+          titleLarge: GoogleFonts.manrope(
+            fontSize: 16, // body regular from design
             fontWeight: FontWeight.w600,
             color: textPrimary,
           ),
-          titleLarge: GoogleFonts.inter(
+          titleMedium: GoogleFonts.manrope(
+            fontSize: 14, // body medium from design
+            fontWeight: FontWeight.w600, // medium weight
+            color: textPrimary,
+          ),
+          titleSmall: GoogleFonts.manrope(
+            fontSize: 12, // body small from design
+            fontWeight: FontWeight.w600,
+            color: textPrimary,
+          ),
+          bodyLarge: GoogleFonts.manrope(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w400, // regular
             color: textPrimary,
           ),
-          titleMedium: GoogleFonts.inter(
+          bodyMedium: GoogleFonts.manrope(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w400,
             color: textPrimary,
           ),
-          titleSmall: GoogleFonts.inter(
+          bodySmall: GoogleFonts.manrope(
             fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: textPrimary,
-          ),
-          bodyLarge: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-            color: textPrimary,
-          ),
-          bodyMedium: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
-            color: textPrimary,
-          ),
-          bodySmall: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
+            fontWeight: FontWeight.w400,
             color: textSecondary,
           ),
-          labelLarge: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+          labelLarge: GoogleFonts.manrope(
+            fontSize: 14, // button text from design
+            fontWeight: FontWeight.w700, // bold
             color: textPrimary,
           ),
-          labelMedium: GoogleFonts.inter(
+          labelMedium: GoogleFonts.manrope(
             fontSize: 12,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w500, // medium
             color: textSecondary,
           ),
-          labelSmall: GoogleFonts.inter(
+          labelSmall: GoogleFonts.manrope(
             fontSize: 10,
             fontWeight: FontWeight.w500,
             color: textHint,
@@ -206,9 +207,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -221,9 +222,9 @@ class AppTheme {
             horizontal: paddingMedium,
             vertical: 12,
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.manrope(
             fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -240,9 +241,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMedium),
           ),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -275,12 +276,12 @@ class AppTheme {
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: const BorderSide(color: errorRed, width: 2),
         ),
-        hintStyle: GoogleFonts.inter(
+        hintStyle: GoogleFonts.manrope(
           fontSize: 14,
           color: textHint,
-          fontWeight: FontWeight.normal,
+          fontWeight: FontWeight.w400,
         ),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 14,
           color: textSecondary,
           fontWeight: FontWeight.w500,
@@ -309,7 +310,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: backgroundColor,
         selectedColor: primaryBlue.withOpacity(0.1),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),

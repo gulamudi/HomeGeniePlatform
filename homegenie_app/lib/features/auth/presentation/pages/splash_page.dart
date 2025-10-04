@@ -61,7 +61,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryBlue,
+      backgroundColor: AppTheme.backgroundColor,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -70,59 +70,117 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo/Icon
+                // Logo Icon - Green Circle with Toolbox Icon (matching design)
                 Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF019863), // Green color from welcome screen
+                    shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.home_repair_service_rounded,
-                    size: 60,
-                    color: AppTheme.primaryBlue,
+                    Icons.home_repair_service,
+                    size: 48,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 24),
                 // App Name
                 Text(
                   'HomeGenie',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 8),
                 // Tagline
                 Text(
-                  'Your Home Service Expert',
+                  'Your home, simplified.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 18,
+                    color: AppTheme.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 48),
-                // Loading Indicator
-                const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 3,
-                  ),
-                ),
+                const SizedBox(height: 80),
+                // Loading Indicator - 3 animated dots (matching design)
+                _AnimatedDots(),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// Animated dots component matching the design
+class _AnimatedDots extends StatefulWidget {
+  @override
+  State<_AnimatedDots> createState() => _AnimatedDotsState();
+}
+
+class _AnimatedDotsState extends State<_AnimatedDots> with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(
+      3,
+      (index) => AnimationController(
+        duration: const Duration(milliseconds: 600),
+        vsync: this,
+      ),
+    );
+
+    _animations = _controllers.map((controller) {
+      return Tween<double>(begin: 1.0, end: 0.3).animate(
+        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+      );
+    }).toList();
+
+    // Stagger the animations
+    for (int i = 0; i < _controllers.length; i++) {
+      Future.delayed(Duration(milliseconds: i * 200), () {
+        if (mounted) {
+          _controllers[i].repeat(reverse: true);
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FadeTransition(
+            opacity: _animations[index],
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: const Color(0xFF019863).withOpacity(index == 0 ? 1.0 : (index == 1 ? 0.5 : 0.2)),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }
