@@ -85,7 +85,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'select-date-time',
         builder: (context, state) {
           final serviceId = state.uri.queryParameters['serviceId'] ?? '';
-          return SelectDateTimePage();
+          final basePrice = double.tryParse(state.uri.queryParameters['basePrice'] ?? '0') ?? 0.0;
+          return SelectDateTimePage(
+            serviceId: serviceId,
+            basePrice: basePrice,
+          );
         },
       ),
       GoRoute(

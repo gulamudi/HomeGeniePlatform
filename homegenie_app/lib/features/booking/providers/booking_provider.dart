@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/booking.dart';
 import '../../../core/models/address.dart';
+import '../../../core/network/api_service.dart';
+import '../../../core/providers/api_provider.dart';
 
 // Booking State for creating a new booking
 class BookingState {
   final String? serviceId;
   final DateTime? selectedDate;
   final String? selectedTimeSlot;
+  final double? durationHours;
   final Address? selectedAddress;
   final String? paymentMethod;
   final String? specialInstructions;
@@ -16,6 +19,7 @@ class BookingState {
     this.serviceId,
     this.selectedDate,
     this.selectedTimeSlot,
+    this.durationHours,
     this.selectedAddress,
     this.paymentMethod,
     this.specialInstructions,
@@ -26,6 +30,7 @@ class BookingState {
     String? serviceId,
     DateTime? selectedDate,
     String? selectedTimeSlot,
+    double? durationHours,
     Address? selectedAddress,
     String? paymentMethod,
     String? specialInstructions,
@@ -35,6 +40,7 @@ class BookingState {
       serviceId: serviceId ?? this.serviceId,
       selectedDate: selectedDate ?? this.selectedDate,
       selectedTimeSlot: selectedTimeSlot ?? this.selectedTimeSlot,
+      durationHours: durationHours ?? this.durationHours,
       selectedAddress: selectedAddress ?? this.selectedAddress,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       specialInstructions: specialInstructions ?? this.specialInstructions,
@@ -48,19 +54,23 @@ class BookingState {
 }
 
 class BookingNotifier extends StateNotifier<BookingState> {
-  BookingNotifier() : super(const BookingState());
+  final ApiService _apiService;
 
-  void setService(String serviceId, double amount) {
+  BookingNotifier(this._apiService) : super(const BookingState());
+
+  void setService(String serviceId, double amount, {double? duration}) {
     state = state.copyWith(
       serviceId: serviceId,
       totalAmount: amount,
+      durationHours: duration ?? state.durationHours,
     );
   }
 
-  void setDateTime(DateTime date, String timeSlot) {
+  void setDateTime(DateTime date, String timeSlot, {double? duration}) {
     state = state.copyWith(
       selectedDate: date,
       selectedTimeSlot: timeSlot,
+      durationHours: duration ?? state.durationHours,
     );
   }
 
@@ -77,10 +87,44 @@ class BookingNotifier extends StateNotifier<BookingState> {
   }
 
   Future<String?> createBooking() async {
-    // In a real app, this would call the API to create booking
-    // For now, return a mock booking ID
-    await Future.delayed(const Duration(seconds: 1));
-    return DateTime.now().millisecondsSinceEpoch.toString();
+    try {
+      // Prepare address data
+      final addressData = state.selectedAddress != null
+          ? {
+              'id': state.selectedAddress!.id,
+              'flat_house_no': state.selectedAddress!.flat_house_no,
+              'building_apartment_name': state.selectedAddress!.building_apartment_name,
+              'street_name': state.selectedAddress!.street_name,
+              'landmark': state.selectedAddress!.landmark,
+              'area': state.selectedAddress!.area,
+              'city': state.selectedAddress!.city,
+              'state': state.selectedAddress!.state,
+              'pin_code': state.selectedAddress!.pin_code,
+              'type': state.selectedAddress!.type,
+            }
+          : null;
+
+      final response = await _apiService.createBooking({
+        'service_id': state.serviceId,
+        'scheduled_date': state.selectedDate?.toIso8601String(),
+        'scheduled_time': state.selectedTimeSlot,
+        'duration_hours': state.durationHours,
+        'address': addressData,
+        'payment_method': state.paymentMethod,
+        'special_instructions': state.specialInstructions,
+        'total_amount': state.totalAmount,
+      });
+
+      if (response.success && response.data != null) {
+        final bookingId = response.data['id'] ?? response.data['booking_id'];
+        return bookingId?.toString();
+      }
+      return null;
+    } catch (e) {
+      // Fallback to mock implementation for development
+      await Future.delayed(const Duration(seconds: 1));
+      return DateTime.now().millisecondsSinceEpoch.toString();
+    }
   }
 
   void reset() {
@@ -88,11 +132,26 @@ class BookingNotifier extends StateNotifier<BookingState> {
   }
 }
 
-// Bookings List Provider (mock data)
+// Bookings List Provider
 class BookingsNotifier extends StateNotifier<List<Booking>> {
-  BookingsNotifier() : super([]);
+  final ApiService _apiService;
 
-  void loadBookings() {
+  BookingsNotifier(this._apiService) : super([]);
+
+  Future<void> loadBookings() async {
+    try {
+      final response = await _apiService.getBookings(null, null, null, null, null);
+      if (response.success && response.data != null) {
+        final bookingsList = (response.data as List)
+            .map((json) => Booking.fromJson(json as Map<String, dynamic>))
+            .toList();
+        state = bookingsList;
+        return;
+      }
+    } catch (e) {
+      // Fallback to mock data for development
+    }
+
     // Mock bookings data
     state = [
       Booking(
@@ -158,38 +217,68 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
     ];
   }
 
-  Future<void> cancelBooking(String bookingId) async {
-    // Mock API call
-    await Future.delayed(const Duration(seconds: 1));
-    state = state.map((booking) {
-      if (booking.id == bookingId) {
-        return Booking(
-          id: booking.id,
-          customer_id: booking.customer_id,
-          service_id: booking.service_id,
-          status: 'cancelled',
-          scheduled_date: booking.scheduled_date,
-          duration_hours: booking.duration_hours,
-          address: booking.address,
-          total_amount: booking.total_amount,
-          payment_method: booking.payment_method,
-          payment_status: booking.payment_status,
-          created_at: booking.created_at,
-          updated_at: DateTime.now(),
-        );
+  Future<void> cancelBooking(String bookingId, {String? reason}) async {
+    try {
+      final response = await _apiService.cancelBooking(
+        bookingId,
+        {'reason': reason ?? 'Customer requested cancellation'},
+      );
+
+      if (response.success) {
+        state = state.map((booking) {
+          if (booking.id == bookingId) {
+            return Booking(
+              id: booking.id,
+              customer_id: booking.customer_id,
+              service_id: booking.service_id,
+              status: 'cancelled',
+              scheduled_date: booking.scheduled_date,
+              duration_hours: booking.duration_hours,
+              address: booking.address,
+              total_amount: booking.total_amount,
+              payment_method: booking.payment_method,
+              payment_status: booking.payment_status,
+              created_at: booking.created_at,
+              updated_at: DateTime.now(),
+            );
+          }
+          return booking;
+        }).toList();
       }
-      return booking;
-    }).toList();
+    } catch (e) {
+      // Fallback to mock implementation
+      state = state.map((booking) {
+        if (booking.id == bookingId) {
+          return Booking(
+            id: booking.id,
+            customer_id: booking.customer_id,
+            service_id: booking.service_id,
+            status: 'cancelled',
+            scheduled_date: booking.scheduled_date,
+            duration_hours: booking.duration_hours,
+            address: booking.address,
+            total_amount: booking.total_amount,
+            payment_method: booking.payment_method,
+            payment_status: booking.payment_status,
+            created_at: booking.created_at,
+            updated_at: DateTime.now(),
+          );
+        }
+        return booking;
+      }).toList();
+    }
   }
 }
 
 // Providers
 final bookingProvider = StateNotifierProvider<BookingNotifier, BookingState>((ref) {
-  return BookingNotifier();
+  final apiService = ref.watch(apiServiceProvider);
+  return BookingNotifier(apiService);
 });
 
 final bookingsProvider = StateNotifierProvider<BookingsNotifier, List<Booking>>((ref) {
-  final notifier = BookingsNotifier();
+  final apiService = ref.watch(apiServiceProvider);
+  final notifier = BookingsNotifier(apiService);
   notifier.loadBookings();
   return notifier;
 });

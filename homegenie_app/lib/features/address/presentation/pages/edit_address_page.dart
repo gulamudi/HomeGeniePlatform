@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared/theme/app_theme.dart';
+import '../../providers/address_provider.dart';
+import 'add_address_page.dart';
 
 class EditAddressPage extends ConsumerWidget {
   final String addressId;
@@ -9,13 +10,19 @@ class EditAddressPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('EditAddress'),
-      ),
-      body: const Center(
-        child: Text('Implementation in progress'),
-      ),
-    );
+    final address = ref.watch(addressByIdProvider(addressId));
+
+    if (address == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit Address'),
+        ),
+        body: const Center(
+          child: Text('Address not found'),
+        ),
+      );
+    }
+
+    return AddAddressPage(address: address);
   }
 }
