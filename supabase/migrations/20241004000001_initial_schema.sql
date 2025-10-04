@@ -113,17 +113,6 @@ CREATE TABLE public.bookings (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
 
-    CONSTRAINT valid_customer_type CHECK (
-        (SELECT user_type FROM public.users WHERE id = customer_id) = 'customer'
-    ),
-    CONSTRAINT valid_partner_type CHECK (
-        partner_id IS NULL OR
-        (SELECT user_type FROM public.users WHERE id = partner_id) = 'partner'
-    ),
-    CONSTRAINT valid_preferred_partner_type CHECK (
-        preferred_partner_id IS NULL OR
-        (SELECT user_type FROM public.users WHERE id = preferred_partner_id) = 'partner'
-    ),
     CONSTRAINT check_scheduled_date_future CHECK (scheduled_date > NOW()),
     CONSTRAINT check_duration_positive CHECK (duration_hours > 0),
     CONSTRAINT check_total_amount_positive CHECK (total_amount >= 0)
@@ -153,12 +142,6 @@ CREATE TABLE public.ratings (
     rating_categories JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
 
-    CONSTRAINT valid_customer_type CHECK (
-        (SELECT user_type FROM public.users WHERE id = customer_id) = 'customer'
-    ),
-    CONSTRAINT valid_partner_type CHECK (
-        (SELECT user_type FROM public.users WHERE id = partner_id) = 'partner'
-    ),
     CONSTRAINT unique_booking_rating UNIQUE (booking_id)
 );
 
@@ -238,3 +221,33 @@ CREATE TRIGGER update_ratings_updated_at BEFORE UPDATE ON public.ratings FOR EAC
 CREATE TRIGGER update_otp_sessions_updated_at BEFORE UPDATE ON public.otp_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_file_uploads_updated_at BEFORE UPDATE ON public.file_uploads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger function to validate user types for bookings
+CREATE OR REPLACE FUNCTION validate_booking_user_types()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if customer_id refers to a customer user
+    IF (SELECT user_type FROM public.users WHERE id = NEW.customer_id) != 'customer' THEN
+        RAISE EXCEPTION 'Customer ID must reference a customer user';
+    END IF;
+    
+    -- Check if partner_id (if not null) refers to a partner user
+    IF NEW.partner_id IS NOT NULL AND 
+       (SELECT user_type FROM public.users WHERE id = NEW.partner_id) != 'partner' THEN
+        RAISE EXCEPTION 'Partner ID must reference a partner user';
+    END IF;
+    
+    -- Check if preferred_partner_id (if not null) refers to a partner user
+    IF NEW.preferred_partner_id IS NOT NULL AND 
+       (SELECT user_type FROM public.users WHERE id = NEW.preferred_partner_id) != 'partner' THEN
+        RAISE EXCEPTION 'Preferred Partner ID must reference a partner user';
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for booking validation
+CREATE TRIGGER validate_booking_user_types_trigger
+    BEFORE INSERT OR UPDATE ON public.bookings
+    FOR EACH ROW EXECUTE FUNCTION validate_booking_user_types();
