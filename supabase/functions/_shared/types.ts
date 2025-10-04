@@ -1,2 +1,2 @@
 // Re-export shared types for edge functions
-export * from '../../../shared/src/index.ts';
+export * from '../../../shared/lib/src/index.ts';
