@@ -1,0 +1,684 @@
+{
+  "info": {
+    "name": "HomeGenie API",
+    "description": "Complete API collection for HomeGenie platform - Customer and Partner endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:54321/functions/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919876543210\",\n  \"userType\": \"customer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.sessionId) {",
+                  "        pm.collectionVariables.set('sessionId', response.data.sessionId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919876543210\",\n  \"otp\": \"123456\",\n  \"sessionId\": \"{{sessionId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-verify-otp"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-profile"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "Get Customer Profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-profile"]
+                }
+              }
+            },
+            {
+              "name": "Update Customer Profile",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"preferences\": {\n    \"preferredLanguage\": \"en\",\n    \"notifications\": {\n      \"email\": true,\n      \"sms\": true,\n      \"push\": true\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer-profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-profile"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Addresses",
+          "item": [
+            {
+              "name": "Get Addresses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-addresses",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-addresses"]
+                }
+              }
+            },
+            {
+              "name": "Add Address",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"flatHouseNo\": \"123\",\n  \"buildingApartmentName\": \"Green Valley\",\n  \"streetName\": \"MG Road\",\n  \"landmark\": \"Near City Mall\",\n  \"area\": \"Sector 15\",\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pinCode\": \"400001\",\n  \"type\": \"home\",\n  \"isDefault\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer-addresses",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-addresses"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Services",
+          "item": [
+            {
+              "name": "Get Services",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-services?page=1&limit=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-services"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "category",
+                      "value": "cleaning",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "house",
+                      "disabled": true
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Service Details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-services/550e8400-e29b-41d4-a716-446655440001",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-services", "550e8400-e29b-41d4-a716-446655440001"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bookings",
+          "item": [
+            {
+              "name": "Create Booking",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"serviceId\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"scheduledDate\": \"2024-10-15T10:00:00Z\",\n  \"durationHours\": 2,\n  \"address\": {\n    \"flatHouseNo\": \"123\",\n    \"buildingApartmentName\": \"Green Valley\",\n    \"streetName\": \"MG Road\",\n    \"landmark\": \"Near City Mall\",\n    \"area\": \"Sector 15\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pinCode\": \"400001\",\n    \"type\": \"home\"\n  },\n  \"paymentMethod\": \"card\",\n  \"specialInstructions\": \"Please call before arriving\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer-bookings",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-bookings"]
+                }
+              }
+            },
+            {
+              "name": "Get Bookings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-bookings?page=1&limit=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-bookings"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "status",
+                      "value": "pending",
+                      "disabled": true
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Booking Details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/customer-bookings/:bookingId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-bookings", ":bookingId"],
+                  "variable": [
+                    {
+                      "key": "bookingId",
+                      "value": "booking-id-here"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Cancel Booking",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Change of plans\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer-bookings/:bookingId/cancel",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-bookings", ":bookingId", "cancel"],
+                  "variable": [
+                    {
+                      "key": "bookingId",
+                      "value": "booking-id-here"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Rate Service",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bookingId\": \"booking-id-here\",\n  \"rating\": 5,\n  \"comment\": \"Excellent service!\",\n  \"ratingCategories\": {\n    \"punctuality\": 5,\n    \"quality\": 5,\n    \"cleanliness\": 5,\n    \"professionalism\": 5\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/customer-bookings/ratings",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["customer-bookings", "ratings"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Partner",
+      "item": [
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "Get Partner Profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/partner-profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-profile"]
+                }
+              }
+            },
+            {
+              "name": "Update Partner Profile",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"services\": [\"cleaning\", \"plumbing\"],\n  \"availability\": {\n    \"weekdays\": [1, 2, 3, 4, 5],\n    \"workingHours\": {\n      \"start\": \"09:00\",\n      \"end\": \"18:00\"\n    },\n    \"isAvailable\": true\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/partner-profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-profile"]
+                }
+              }
+            },
+            {
+              "name": "Upload Document",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"aadhar\",\n  \"fileUrl\": \"https://example.com/documents/aadhar.pdf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/partner-profile/documents",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-profile", "documents"]
+                }
+              }
+            },
+            {
+              "name": "Get Verification Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/partner-profile/verification",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-profile", "verification"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Jobs",
+          "item": [
+            {
+              "name": "Get Available Jobs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/partner-jobs/available?page=1&limit=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-jobs", "available"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "radius",
+                      "value": "10",
+                      "disabled": true
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Assigned Jobs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/partner-jobs/assigned?page=1&limit=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-jobs", "assigned"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Accept Job",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"estimatedArrival\": \"2024-10-15T10:30:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/partner-jobs/:jobId/accept",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-jobs", ":jobId", "accept"],
+                  "variable": [
+                    {
+                      "key": "jobId",
+                      "value": "job-id-here"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Job Status",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_progress\",\n  \"notes\": \"Started working on the job\",\n  \"location\": {\n    \"lat\": 19.0760,\n    \"lng\": 72.8777\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/partner-jobs/:jobId/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-jobs", ":jobId", "status"],
+                  "variable": [
+                    {
+                      "key": "jobId",
+                      "value": "job-id-here"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Earnings",
+          "item": [
+            {
+              "name": "Get Earnings",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/partner-earnings?page=1&limit=20&groupBy=day",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-earnings"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "groupBy",
+                      "value": "day"
+                    },
+                    {
+                      "key": "fromDate",
+                      "value": "2024-01-01T00:00:00Z",
+                      "disabled": true
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Request Payout",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 1000,\n  \"bankAccountId\": \"bank-account-id\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/partner-earnings",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["partner-earnings"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

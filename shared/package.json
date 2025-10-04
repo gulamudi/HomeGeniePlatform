@@ -1,0 +1,22 @@
+{
+  "name": "@homegenie/shared",
+  "version": "1.0.0",
+  "description": "Shared contracts and types for HomeGenie platform",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "generate-dart": "node scripts/generate-dart-models.js",
+    "generate-postman": "node scripts/generate-postman-collection.js",
+    "validate": "ajv validate --all-errors"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "ajv": "^8.12.0",
+    "ajv-cli": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  }
+}

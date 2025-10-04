@@ -1,0 +1,117 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/otp_screen.dart';
+import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/onboarding/screens/document_verification_screen.dart';
+import '../../features/onboarding/screens/profile_setup_screen.dart';
+import '../../features/home/screens/home_screen.dart';
+import '../../features/jobs/screens/job_details_screen.dart';
+import '../../features/earnings/screens/earnings_screen.dart';
+import '../../features/preferences/screens/preferences_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
+import '../../features/profile/screens/support_screen.dart';
+import '../constants/app_constants.dart';
+import '../storage/storage_service.dart';
+
+class AppRouter {
+  final StorageService _storage;
+
+  AppRouter(this._storage);
+
+  late final GoRouter router = GoRouter(
+    initialLocation: AppConstants.routeLogin,
+    redirect: (context, state) {
+      final isLoggedIn = _storage.isLoggedIn();
+      final isOnboarded = _storage.isOnboarded();
+      final path = state.uri.path;
+
+      // If not logged in and trying to access protected route
+      if (!isLoggedIn &&
+          path != AppConstants.routeLogin &&
+          path != AppConstants.routeOtp) {
+        return AppConstants.routeLogin;
+      }
+
+      // If logged in but not onboarded
+      if (isLoggedIn && !isOnboarded && path == AppConstants.routeLogin) {
+        return AppConstants.routeOnboarding;
+      }
+
+      // If logged in and onboarded, redirect to home from login
+      if (isLoggedIn && isOnboarded && path == AppConstants.routeLogin) {
+        return AppConstants.routeHome;
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: AppConstants.routeLogin,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeOtp,
+        builder: (context, state) {
+          final phone = state.uri.queryParameters['phone'] ?? '';
+          return OtpScreen(phone: phone);
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeOnboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeDocumentVerification,
+        builder: (context, state) => const DocumentVerificationScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeProfileSetup,
+        builder: (context, state) => const ProfileSetupScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeHome,
+        builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeJobDetails,
+        builder: (context, state) {
+          final jobId = state.uri.queryParameters['jobId'] ?? '';
+          return JobDetailsScreen(jobId: jobId);
+        },
+      ),
+      GoRoute(
+        path: AppConstants.routeEarnings,
+        builder: (context, state) => const EarningsScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routePreferences,
+        builder: (context, state) => const PreferencesScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeProfile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeSupport,
+        builder: (context, state) => const SupportScreen(),
+      ),
+    ],
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48),
+            const SizedBox(height: 16),
+            Text('Page not found: ${state.uri.path}'),
+            TextButton(
+              onPressed: () => context.go(AppConstants.routeHome),
+              child: const Text('Go Home'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
