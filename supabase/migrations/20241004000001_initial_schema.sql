@@ -123,7 +123,10 @@ CREATE TABLE public.bookings (
     CONSTRAINT valid_preferred_partner_type CHECK (
         preferred_partner_id IS NULL OR
         (SELECT user_type FROM public.users WHERE id = preferred_partner_id) = 'partner'
-    )
+    ),
+    CONSTRAINT check_scheduled_date_future CHECK (scheduled_date > NOW()),
+    CONSTRAINT check_duration_positive CHECK (duration_hours > 0),
+    CONSTRAINT check_total_amount_positive CHECK (total_amount >= 0)
 );
 
 -- Booking timeline
@@ -155,7 +158,8 @@ CREATE TABLE public.ratings (
     ),
     CONSTRAINT valid_partner_type CHECK (
         (SELECT user_type FROM public.users WHERE id = partner_id) = 'partner'
-    )
+    ),
+    CONSTRAINT unique_booking_rating UNIQUE (booking_id)
 );
 
 -- OTP sessions (for temporary storage during auth)
@@ -228,4 +232,9 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users FOR EACH RO
 CREATE TRIGGER update_customer_profiles_updated_at BEFORE UPDATE ON public.customer_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_partner_profiles_updated_at BEFORE UPDATE ON public.partner_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON public.services FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_service_pricing_tiers_updated_at BEFORE UPDATE ON public.service_pricing_tiers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON public.bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_ratings_updated_at BEFORE UPDATE ON public.ratings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_otp_sessions_updated_at BEFORE UPDATE ON public.otp_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_notifications_updated_at BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_file_uploads_updated_at BEFORE UPDATE ON public.file_uploads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
