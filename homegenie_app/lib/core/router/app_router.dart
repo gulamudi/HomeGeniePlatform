@@ -76,7 +76,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'select-date-time',
         builder: (context, state) {
           final serviceId = state.uri.queryParameters['serviceId'] ?? '';
-          return SelectDateTimePage(serviceId: serviceId);
+          return SelectDateTimePage();
         },
       ),
       GoRoute(
@@ -182,7 +182,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
     redirect: (context, state) async {
-      final isAuthenticated = await StorageService.isAuthenticated();
+      final isAuthenticated = StorageService.getBool('authenticated') ?? false;
       final isOnAuthPage = state.matchedLocation == '/login' ||
           state.matchedLocation == '/splash' ||
           state.matchedLocation.startsWith('/otp-verification');

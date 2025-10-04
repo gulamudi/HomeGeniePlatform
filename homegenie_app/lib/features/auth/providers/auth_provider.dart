@@ -34,9 +34,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
     try {
-      final isAuthenticated = await StorageService.isAuthenticated();
-      if (isAuthenticated) {
-        final userData = await StorageService.getUser();
+      final isAuthenticated = StorageService.getBool('authenticated');
+      if (isAuthenticated == true) {
+        final userData = StorageService.getObject('user');
         if (userData != null) {
           state = state.copyWith(
             user: User.fromJson(userData),
@@ -61,7 +61,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       // In a real app, this would call the API to send OTP
       // For now, we just store the phone number
-      await StorageService.saveData('pending_phone', phoneNumber);
+      await StorageService.setString('pending_phone', phoneNumber);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
@@ -90,8 +90,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       // Save user data
-      await StorageService.saveUser(user.toJson());
-      await StorageService.setAuthenticated(true);
+      await StorageService.setObject('user', user.toJson());
+      await StorageService.setBool('authenticated', true);
 
       state = state.copyWith(
         user: user,
@@ -109,13 +109,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    await StorageService.clearAll();
+    await StorageService.clear();
     state = const AuthState();
   }
 
   void updateUser(User user) {
     state = state.copyWith(user: user);
-    StorageService.saveUser(user.toJson());
+    StorageService.setObject('user', user.toJson());
   }
 }
 

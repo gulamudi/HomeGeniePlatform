@@ -41,7 +41,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
 
     if (!mounted) return;
 
-    final isAuthenticated = await StorageService.isAuthenticated();
+    final isAuthenticated = await StorageService.getBool('isAuthenticated') ?? false;
 
     if (!mounted) return;
 
