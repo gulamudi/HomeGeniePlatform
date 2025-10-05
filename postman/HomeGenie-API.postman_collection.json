@@ -739,8 +739,154 @@
     },
     {
       "name": "Partner",
-      "description": "Partner-specific endpoints for profile, jobs, and earnings",
+      "description": "Partner-specific endpoints for profile, jobs, and earnings\n\n## How to Test Partner APIs\n\n1. **Authentication Flow** (in order):\n   - Request OTP using +918888888888\n   - Verify OTP with code 123456\n   - Setup Partner Account (creates partner profile)\n\n2. **Profile Management**:\n   - Get/Update partner profile\n   - Upload verification documents\n   - Check verification status\n\n3. **Jobs**:\n   - View available jobs\n   - Accept jobs\n   - Update job status\n\n4. **Earnings**:\n   - View earnings reports\n   - Request payouts\n\n**Note:** Use a different phone number for partner testing (+918888888888) than customer testing (+919999999999) to avoid conflicts.",
       "item": [
+        {
+          "name": "Authentication",
+          "description": "Partner authentication flow - Login with OTP and setup partner account",
+          "item": [
+            {
+              "name": "1. Login - Request OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "apikey",
+                    "value": "{{anonKey}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+918888888888\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{authUrl}}/otp",
+                  "host": ["{{authUrl}}"],
+                  "path": ["otp"]
+                },
+                "description": "Request OTP for partner login. Use a different phone number than customer (e.g., +918888888888) to keep partner and customer sessions separate.\n\n**Test Phone Number:** +918888888888\n**Test OTP:** 123456"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    console.log('✅ OTP sent successfully');",
+                      "    console.log('🔑 Use OTP: 123456 for test number +918888888888');",
+                      "    console.log('📱 Next: Verify OTP to get access token');",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Verify OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "apikey",
+                    "value": "{{anonKey}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+918888888888\",\n  \"token\": \"123456\",\n  \"type\": \"sms\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{authUrl}}/verify",
+                  "host": ["{{authUrl}}"],
+                  "path": ["verify"]
+                },
+                "description": "Verify OTP and receive access tokens.\n\n**Test OTP:** 123456"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.access_token) {",
+                      "        pm.collectionVariables.set('accessToken', response.access_token);",
+                      "        pm.collectionVariables.set('refreshToken', response.refresh_token);",
+                      "        console.log('✅ Access token saved');",
+                      "        console.log('✅ Refresh token saved');",
+                      "        console.log('👤 User ID:', response.user.id);",
+                      "        console.log('📱 Next: Setup partner account');",
+                      "    }",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Setup Partner Account",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/setup-partner",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["setup-partner"]
+                },
+                "description": "Convert the authenticated user to a partner account. This creates the partner profile and sets up default availability.\n\n**IMPORTANT:** Run this after OTP verification to enable access to all partner APIs.\n\nThis endpoint:\n- Updates user type to 'partner'\n- Creates partner_profiles entry\n- Sets default availability (Mon-Fri, 9am-6pm)\n- Returns the created partner profile\n\nIf already a partner, returns existing profile."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    console.log('✅ Partner account set up successfully');",
+                      "    console.log('👷 Partner Profile:', JSON.stringify(response.data.profile, null, 2));",
+                      "    console.log('📱 Next: You can now use all partner APIs');",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
         {
           "name": "Profile",
           "item": [
