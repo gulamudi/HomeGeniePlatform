@@ -219,7 +219,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await StorageService.setString(AppConstants.userTokenKey, response.session!.accessToken);
 
       // Check if user exists in our users table
-      final existingUser = await _supabase
+      var existingUser = await _supabase
           .from('users')
           .select()
           .eq('id', response.user!.id)
@@ -227,45 +227,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       app_user.User user;
       if (existingUser == null) {
-        // Create new user in database
-        final userType = await StorageService.getString('pending_user_type') ?? 'customer';
+        // User should be automatically created by database trigger
+        // Wait a moment and retry in case of race condition
+        print('⏳ User not found, waiting for database trigger...');
+        await Future.delayed(const Duration(milliseconds: 500));
 
-        print('🔨 Creating new user in database...');
-        print('📋 User ID: ${response.user!.id}');
-        print('📱 Phone: $formattedPhone');
-        print('👤 User type: $userType');
-
-        final userData = {
-          'id': response.user!.id,
-          'phone': formattedPhone,
-          'user_type': userType,  // Database uses snake_case
-          'full_name': 'User ${formattedPhone.substring(formattedPhone.length - 4)}',  // Database uses snake_case
-        };
-
-        final newUser = await _supabase
+        final retryUser = await _supabase
             .from('users')
-            .insert(userData)
             .select()
-            .single();
+            .eq('id', response.user!.id)
+            .maybeSingle();
 
-        print('✅ Database response (raw): $newUser');
+        if (retryUser != null) {
+          print('✅ User created by trigger');
+          existingUser = retryUser;
+        } else {
+          // Fallback: Create user manually if trigger didn't work
+          final userType = await StorageService.getString('pending_user_type') ?? 'customer';
 
-        // Convert snake_case response to camelCase for User model
-        final userJson = {
-          'id': newUser['id'],
-          'email': newUser['email'],
-          'phone': newUser['phone'],
-          'fullName': newUser['full_name'],
-          'avatarUrl': newUser['avatar_url'],
-          'userType': newUser['user_type'],
-          'createdAt': newUser['created_at'],
-          'updatedAt': newUser['updated_at'],
-        };
+          print('🔨 Creating new user manually (trigger fallback)...');
+          print('📋 User ID: ${response.user!.id}');
+          print('📱 Phone: $formattedPhone');
+          print('👤 User type: $userType');
 
-        print('✅ Converted to camelCase: $userJson');
-        user = app_user.User.fromJson(userJson);
-        print('✨ Created new user: ${user.full_name}');
-      } else {
+          final userData = {
+            'id': response.user!.id,
+            'phone': formattedPhone,
+            'user_type': userType,
+            'full_name': 'User ${formattedPhone.substring(formattedPhone.length - 4)}',
+          };
+
+          final newUser = await _supabase
+              .from('users')
+              .insert(userData)
+              .select()
+              .single();
+
+          print('✅ User created manually');
+          existingUser = newUser;
+        }
+      }
+
+      if (existingUser != null) {
         print('✅ Database response (raw): $existingUser');
 
         // Convert snake_case response to camelCase for User model
@@ -282,7 +285,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
         print('✅ Converted to camelCase: $userJson');
         user = app_user.User.fromJson(userJson);
-        print('👤 Found existing user: ${user.full_name}');
+        print('👤 User loaded: ${user.full_name}');
+      } else {
+        throw Exception('Failed to create or load user');
       }
 
       // Save user data locally

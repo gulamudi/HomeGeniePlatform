@@ -1,4 +1,4 @@
-import { corsHeaders, handleCORS, createResponse, createErrorResponse, validateRequestBody, createSupabaseClient, getAuthUser } from '../_shared/utils.ts';
+import { corsHeaders, handleCORS, createResponse, createErrorResponse, validateRequestBody, createSupabaseClient, getAuthUser, transformServiceFromDb } from '../_shared/utils.ts';
 import { GetServicesRequestSchema, GetServiceDetailsRequestSchema, HTTP_STATUS, API_MESSAGES } from '../_shared/types.ts';
 
 Deno.serve(async (req) => {
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
           );
         }
 
-        return createResponse(service, HTTP_STATUS.OK);
+        return createResponse(transformServiceFromDb(service), HTTP_STATUS.OK);
 
       } else {
         // Get all services with filters
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
 
         return createResponse(
           {
-            services: services || [],
+            services: (services || []).map(transformServiceFromDb),
             pagination: {
               page,
               limit,

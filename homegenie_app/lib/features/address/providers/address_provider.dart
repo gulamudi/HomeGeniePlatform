@@ -53,16 +53,16 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
   Future<void> addAddress(Address address) async {
     try {
       final response = await _apiService.addAddress({
-        'flat_house_no': address.flat_house_no,
-        'building_apartment_name': address.building_apartment_name,
-        'street_name': address.street_name,
+        'flatHouseNo': address.flat_house_no,
+        'buildingApartmentName': address.building_apartment_name,
+        'streetName': address.street_name,
         'landmark': address.landmark,
         'area': address.area,
         'city': address.city,
         'state': address.state,
-        'pin_code': address.pin_code,
+        'pinCode': address.pin_code,
         'type': address.type,
-        'is_default': address.is_default,
+        'isDefault': address.is_default,
       });
 
       if (response.success && response.data != null) {
@@ -129,16 +129,16 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
     try {
       final response = await _apiService.updateAddress({
         'id': id,
-        'flat_house_no': address.flat_house_no,
-        'building_apartment_name': address.building_apartment_name,
-        'street_name': address.street_name,
+        'flatHouseNo': address.flat_house_no,
+        'buildingApartmentName': address.building_apartment_name,
+        'streetName': address.street_name,
         'landmark': address.landmark,
         'area': address.area,
         'city': address.city,
         'state': address.state,
-        'pin_code': address.pin_code,
+        'pinCode': address.pin_code,
         'type': address.type,
-        'is_default': address.is_default,
+        'isDefault': address.is_default,
       });
 
       if (response.success) {

@@ -88,110 +88,79 @@ class BookingNotifier extends StateNotifier<BookingState> {
 
   Future<String?> createBooking(WidgetRef ref) async {
     // Validate required fields
-    if (state.serviceId == null || state.selectedDate == null) {
-      throw Exception('Service and date are required');
+    if (state.serviceId == null || state.selectedDate == null || state.selectedTimeSlot == null) {
+      throw Exception('Service, date, and time are required');
     }
 
     try {
-      // Prepare address data
+      // Combine date and time into a single DateTime
+      // Parse time slot format: "9:30 am" or "2:00 pm"
+      final timeSlotParts = state.selectedTimeSlot!.split(' ');
+      final timeParts = timeSlotParts[0].split(':');
+      int hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      // Adjust hour based on AM/PM
+      if (timeSlotParts.length > 1) {
+        final isPM = timeSlotParts[1].toLowerCase() == 'pm';
+        if (isPM && hour != 12) {
+          hour += 12;
+        } else if (!isPM && hour == 12) {
+          hour = 0;
+        }
+      }
+
+      final scheduledDateTime = DateTime(
+        state.selectedDate!.year,
+        state.selectedDate!.month,
+        state.selectedDate!.day,
+        hour,
+        minute,
+      );
+
+      // Prepare address data in camelCase format
       final addressData = state.selectedAddress != null
           ? {
               'id': state.selectedAddress!.id,
-              'flat_house_no': state.selectedAddress!.flat_house_no,
-              'building_apartment_name': state.selectedAddress!.building_apartment_name,
-              'street_name': state.selectedAddress!.street_name,
+              'flatHouseNo': state.selectedAddress!.flat_house_no,
+              'buildingApartmentName': state.selectedAddress!.building_apartment_name,
+              'streetName': state.selectedAddress!.street_name,
               'landmark': state.selectedAddress!.landmark,
               'area': state.selectedAddress!.area,
               'city': state.selectedAddress!.city,
               'state': state.selectedAddress!.state,
-              'pin_code': state.selectedAddress!.pin_code,
+              'pinCode': state.selectedAddress!.pin_code,
               'type': state.selectedAddress!.type,
+              'isDefault': state.selectedAddress!.is_default,
             }
           : null;
 
       final response = await _apiService.createBooking({
-        'service_id': state.serviceId,
-        'scheduled_date': state.selectedDate?.toIso8601String(),
-        'scheduled_time': state.selectedTimeSlot,
-        'duration_hours': state.durationHours,
+        'serviceId': state.serviceId,
+        'scheduledDate': scheduledDateTime.toIso8601String(),
+        'durationHours': state.durationHours,
         'address': addressData,
-        'payment_method': state.paymentMethod,
-        'special_instructions': state.specialInstructions,
-        'total_amount': state.totalAmount,
+        'paymentMethod': state.paymentMethod,
+        'specialInstructions': state.specialInstructions,
       });
 
       if (response.success && response.data != null) {
-        final bookingId = response.data['id'] ?? response.data['booking_id'];
+        final bookingData = response.data as Map<String, dynamic>;
 
-        // Add the new booking to the bookings list
-        final newBooking = Booking(
-          id: bookingId?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
-          customer_id: 'customer1',
-          service_id: state.serviceId!,
-          status: 'confirmed',
-          scheduled_date: state.selectedDate!,
-          duration_hours: state.durationHours ?? 1.0,
-          address: addressData ?? {},
-          total_amount: state.totalAmount ?? 0.0,
-          payment_method: state.paymentMethod ?? 'online',
-          payment_status: 'paid',
-          special_instructions: state.specialInstructions,
-          created_at: DateTime.now(),
-          updated_at: DateTime.now(),
-        );
+        // Parse the booking from response
+        final newBooking = Booking.fromJson(bookingData);
 
+        // Add to local state
         ref.read(bookingsProvider.notifier).addBooking(newBooking);
 
-        return bookingId?.toString();
+        print('✓ Booking created successfully: ${newBooking.id}');
+        return newBooking.id;
       }
-      return null;
+
+      throw Exception('Failed to create booking: ${response.error ?? 'Unknown error'}');
     } catch (e) {
-      // Fallback to mock implementation for development
-      print('\n⚠️  FALLING BACK TO MOCK DATA ⚠️');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('Reason: Failed to create booking in database');
-      print('Error: $e');
-      print('Impact: Booking created locally but NOT saved to database');
-      print('Action Required:');
-      print('  1. Fix the database connection issues');
-      print('  2. Re-create the booking once database is working');
-      print('  3. This mock booking will be lost on app restart');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-
-      await Future.delayed(const Duration(seconds: 1));
-      final bookingId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      // Add the new booking to the bookings list
-      final addressData = state.selectedAddress != null
-          ? {
-              'flat_house_no': state.selectedAddress!.flat_house_no,
-              'building_apartment_name': state.selectedAddress!.building_apartment_name,
-              'street_name': state.selectedAddress!.street_name,
-              'area': state.selectedAddress!.area,
-              'city': state.selectedAddress!.city,
-              'pin_code': state.selectedAddress!.pin_code,
-            }
-          : {};
-
-      final newBooking = Booking(
-        id: bookingId,
-        customer_id: 'customer1',
-        service_id: state.serviceId!,
-        status: 'confirmed',
-        scheduled_date: state.selectedDate!,
-        duration_hours: state.durationHours ?? 1.0,
-        address: addressData,
-        total_amount: state.totalAmount ?? 0.0,
-        payment_method: state.paymentMethod ?? 'online',
-        payment_status: 'paid',
-        special_instructions: state.specialInstructions,
-        created_at: DateTime.now(),
-        updated_at: DateTime.now(),
-      );
-
-      ref.read(bookingsProvider.notifier).addBooking(newBooking);
-
-      return bookingId;
+      print('❌ Error creating booking: $e');
+      rethrow;
     }
   }
 
@@ -221,85 +190,14 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
             .toList();
         state = bookingsList;
         print('✓ Successfully loaded ${bookingsList.length} bookings from database');
-        return;
+      } else {
+        print('⚠️ Failed to load bookings: ${response.error ?? 'Unknown error'}');
+        state = [];
       }
     } catch (e) {
-      // Fallback to mock data for development
-      print('\n⚠️  FALLING BACK TO MOCK DATA ⚠️');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('Reason: Failed to fetch bookings from database');
-      print('Error: $e');
-      print('Impact: Showing mock/dummy bookings instead of real data');
-      print('Action Required:');
-      print('  1. Ensure Supabase is running (supabase start)');
-      print('  2. Check database connection and migrations');
-      print('  3. Verify edge functions are deployed');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      print('❌ Error loading bookings: $e');
+      state = [];
     }
-
-    // Mock bookings data
-    state = [
-      Booking(
-        id: '1',
-        customer_id: 'customer1',
-        service_id: '1',
-        status: 'upcoming',
-        scheduled_date: DateTime.now().add(const Duration(days: 2)),
-        duration_hours: 1.5,
-        address: {
-          'flat_house_no': '101',
-          'street_name': 'MG Road',
-          'area': 'Whitefield',
-          'city': 'Bangalore',
-          'pin_code': '560066',
-        },
-        total_amount: 499.0,
-        payment_method: 'online',
-        payment_status: 'paid',
-        created_at: DateTime.now().subtract(const Duration(days: 1)),
-        updated_at: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Booking(
-        id: '2',
-        customer_id: 'customer1',
-        service_id: '2',
-        status: 'completed',
-        scheduled_date: DateTime.now().subtract(const Duration(days: 5)),
-        duration_hours: 1.0,
-        address: {
-          'flat_house_no': '101',
-          'street_name': 'MG Road',
-          'area': 'Whitefield',
-          'city': 'Bangalore',
-          'pin_code': '560066',
-        },
-        total_amount: 349.0,
-        payment_method: 'cash',
-        payment_status: 'paid',
-        created_at: DateTime.now().subtract(const Duration(days: 6)),
-        updated_at: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-      Booking(
-        id: '3',
-        customer_id: 'customer1',
-        service_id: '4',
-        status: 'upcoming',
-        scheduled_date: DateTime.now().add(const Duration(days: 5)),
-        duration_hours: 3.0,
-        address: {
-          'flat_house_no': '101',
-          'street_name': 'MG Road',
-          'area': 'Whitefield',
-          'city': 'Bangalore',
-          'pin_code': '560066',
-        },
-        total_amount: 599.0,
-        payment_method: 'online',
-        payment_status: 'paid',
-        created_at: DateTime.now().subtract(const Duration(hours: 12)),
-        updated_at: DateTime.now().subtract(const Duration(hours: 12)),
-      ),
-    ];
   }
 
   void addBooking(Booking booking) {
@@ -334,38 +232,12 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
           }
           return booking;
         }).toList();
+      } else {
+        throw Exception('Failed to cancel booking: ${response.error}');
       }
     } catch (e) {
-      // Fallback to mock implementation
-      print('\n⚠️  FALLING BACK TO MOCK CANCELLATION ⚠️');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      print('Reason: Failed to cancel booking in database');
-      print('Error: $e');
-      print('Impact: Booking cancelled locally but NOT in database');
-      print('Action Required:');
-      print('  1. Fix database connection');
-      print('  2. Manually cancel booking ID: $bookingId in database');
-      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-
-      state = state.map((booking) {
-        if (booking.id == bookingId) {
-          return Booking(
-            id: booking.id,
-            customer_id: booking.customer_id,
-            service_id: booking.service_id,
-            status: 'cancelled',
-            scheduled_date: booking.scheduled_date,
-            duration_hours: booking.duration_hours,
-            address: booking.address,
-            total_amount: booking.total_amount,
-            payment_method: booking.payment_method,
-            payment_status: booking.payment_status,
-            created_at: booking.created_at,
-            updated_at: DateTime.now(),
-          );
-        }
-        return booking;
-      }).toList();
+      print('❌ Error cancelling booking: $e');
+      rethrow;
     }
   }
 }

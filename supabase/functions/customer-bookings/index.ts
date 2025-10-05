@@ -1,4 +1,4 @@
-import { corsHeaders, handleCORS, createResponse, createErrorResponse, validateRequestBody, createSupabaseClient, getAuthUser } from '../_shared/utils.ts';
+import { corsHeaders, handleCORS, createResponse, createErrorResponse, validateRequestBody, createSupabaseClient, getAuthUser, transformAddressToDb, transformBookingFromDb } from '../_shared/utils.ts';
 import { CreateBookingRequestSchema, GetBookingsRequestSchema, CancelBookingRequestSchema, RescheduleBookingRequestSchema, RateServiceRequestSchema, HTTP_STATUS, API_MESSAGES } from '../_shared/types.ts';
 
 Deno.serve(async (req) => {
@@ -143,9 +143,6 @@ Deno.serve(async (req) => {
         // Calculate total amount (simplified - could include pricing tiers)
         const totalAmount = service.base_price * bookingData.durationHours;
 
-        // Convert address to location point for spatial queries
-        // For now, we'll skip the location conversion
-
         // Create booking
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
@@ -154,7 +151,7 @@ Deno.serve(async (req) => {
             service_id: bookingData.serviceId,
             scheduled_date: bookingData.scheduledDate,
             duration_hours: bookingData.durationHours,
-            address: bookingData.address,
+            address: transformAddressToDb(bookingData.address),
             total_amount: totalAmount,
             payment_method: bookingData.paymentMethod,
             special_instructions: bookingData.specialInstructions,
@@ -177,11 +174,15 @@ Deno.serve(async (req) => {
           console.error('    2. Table "bookings" does not exist or migration pending');
           console.error('    3. Foreign key constraint violation (invalid service_id)');
           console.error('    4. Required field missing in request');
+          console.error('    5. Date validation failed (scheduled_date constraint)');
           return createErrorResponse(
-            'Failed to create booking',
+            `Failed to create booking: ${bookingError.message}`,
             HTTP_STATUS.INTERNAL_SERVER_ERROR
           );
         }
+
+        // Transform booking response from snake_case to camelCase
+        const responseBooking = transformBookingFromDb(booking);
 
         // Create booking timeline entry
         await supabase
@@ -195,7 +196,7 @@ Deno.serve(async (req) => {
           });
 
         return createResponse(
-          booking,
+          responseBooking,
           HTTP_STATUS.CREATED,
           API_MESSAGES.BOOKING_CREATED
         );
@@ -226,7 +227,7 @@ Deno.serve(async (req) => {
           );
         }
 
-        return createResponse(booking, HTTP_STATUS.OK);
+        return createResponse(transformBookingFromDb(booking), HTTP_STATUS.OK);
 
       } else {
         // Get all bookings with filters
@@ -287,7 +288,7 @@ Deno.serve(async (req) => {
 
         return createResponse(
           {
-            bookings: bookings || [],
+            bookings: (bookings || []).map(transformBookingFromDb),
             pagination: {
               page,
               limit,
@@ -361,7 +362,7 @@ Deno.serve(async (req) => {
           });
 
         return createResponse(
-          updatedBooking,
+          transformBookingFromDb(updatedBooking),
           HTTP_STATUS.OK,
           API_MESSAGES.BOOKING_CANCELLED
         );
@@ -428,7 +429,7 @@ Deno.serve(async (req) => {
           });
 
         return createResponse(
-          updatedBooking,
+          transformBookingFromDb(updatedBooking),
           HTTP_STATUS.OK,
           'Booking rescheduled successfully'
         );

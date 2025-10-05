@@ -204,3 +204,94 @@ export const formatPhoneNumber = (phone: string): string => {
 
   return cleaned;
 };
+
+// Data transformation helpers
+export const transformAddressToDb = (address: any) => {
+  if (!address) return null;
+  return {
+    id: address.id,
+    flat_house_no: address.flatHouseNo,
+    building_apartment_name: address.buildingApartmentName,
+    street_name: address.streetName,
+    landmark: address.landmark,
+    area: address.area,
+    city: address.city,
+    state: address.state,
+    pin_code: address.pinCode,
+    type: address.type,
+    is_default: address.isDefault,
+  };
+};
+
+export const transformAddressFromDb = (address: any) => {
+  if (!address) return null;
+  return {
+    id: address.id,
+    flatHouseNo: address.flat_house_no,
+    buildingApartmentName: address.building_apartment_name,
+    streetName: address.street_name,
+    landmark: address.landmark,
+    area: address.area,
+    city: address.city,
+    state: address.state,
+    pinCode: address.pin_code,
+    type: address.type,
+    isDefault: address.is_default,
+  };
+};
+
+export const transformBookingFromDb = (booking: any) => {
+  if (!booking) return null;
+  return {
+    id: booking.id,
+    customerId: booking.customer_id,
+    partnerId: booking.partner_id,
+    serviceId: booking.service_id,
+    status: booking.status,
+    scheduledDate: booking.scheduled_date,
+    durationHours: booking.duration_hours,
+    address: transformAddressFromDb(booking.address),
+    totalAmount: booking.total_amount,
+    paymentMethod: booking.payment_method,
+    paymentStatus: booking.payment_status,
+    specialInstructions: booking.special_instructions,
+    preferredPartnerId: booking.preferred_partner_id,
+    createdAt: booking.created_at,
+    updatedAt: booking.updated_at,
+    service: booking.service,
+    customer: booking.customer,
+    partner: booking.partner,
+    booking_timeline: booking.booking_timeline,
+    ratings: booking.ratings,
+  };
+};
+
+export const transformServiceFromDb = (service: any) => {
+  if (!service) return null;
+  return {
+    id: service.id,
+    name: service.name,
+    description: service.description,
+    category: service.category,
+    basePrice: service.base_price,
+    durationHours: service.duration_hours,
+    isActive: service.is_active,
+    requirements: service.requirements || [],
+    includes: service.includes || [],
+    excludes: service.excludes || [],
+    imageUrl: service.image_url,
+    createdAt: service.created_at,
+    updatedAt: service.updated_at,
+    servicePricingTiers: service.service_pricing_tiers?.map((tier: any) => ({
+      id: tier.id,
+      serviceId: tier.service_id,
+      name: tier.name,
+      description: tier.description,
+      price: tier.price,
+      durationHours: tier.duration_hours,
+      isDefault: tier.is_default,
+      createdAt: tier.created_at,
+      updatedAt: tier.updated_at,
+    })) || [],
+  };
+};

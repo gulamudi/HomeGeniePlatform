@@ -12,24 +12,8 @@ part 'api_service.g.dart';
 abstract class ApiService {
   factory ApiService(Dio dio, {String baseUrl}) = _ApiService;
 
-  // Authentication APIs
-  @POST('/auth-login')
-  Future<ApiResponse> login(@Body() Map<String, dynamic> request);
-
-  @POST('/auth-verify-otp')
-  Future<ApiResponse> verifyOtp(@Body() Map<String, dynamic> request);
-
-  @POST('/auth-refresh-token')
-  Future<ApiResponse> refreshToken(@Body() Map<String, dynamic> request);
-
-  @POST('/auth-logout')
-  Future<ApiResponse> logout(@Body() Map<String, dynamic> request);
-
-  @GET('/auth-profile')
-  Future<ApiResponse> getProfile();
-
-  @PUT('/auth-profile')
-  Future<ApiResponse> updateProfile(@Body() Map<String, dynamic> request);
+  // Note: Authentication (login, OTP verification) is handled directly via Supabase Auth client
+  // See: lib/features/auth/providers/auth_provider.dart
 
   // Customer APIs
   @GET('/customer-profile')
