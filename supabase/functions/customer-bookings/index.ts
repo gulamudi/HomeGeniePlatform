@@ -118,12 +118,45 @@ Deno.serve(async (req) => {
 
       } else {
         // Create booking
-        const validation = await validateRequestBody(req, CreateBookingRequestSchema);
-        if (!validation.success) {
-          return createErrorResponse(validation.error, HTTP_STATUS.BAD_REQUEST);
+        console.log('📥 Received POST request to create booking');
+
+        // Log raw request details for debugging
+        const contentType = req.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+
+        let rawBody;
+        try {
+          rawBody = await req.text();
+          console.log('Raw body:', rawBody);
+          console.log('Raw body length:', rawBody.length);
+
+          // Try to parse it manually
+          const parsedBody = JSON.parse(rawBody);
+          console.log('Parsed body:', JSON.stringify(parsedBody, null, 2));
+
+          // Now validate with schema
+          const result = CreateBookingRequestSchema.safeParse(parsedBody);
+          if (!result.success) {
+            console.error('Validation failed:', JSON.stringify(result.error, null, 2));
+            const errorMessages = result.error.errors?.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ') || 'Validation error';
+            return createErrorResponse(
+              `Validation failed: ${errorMessages}`,
+              HTTP_STATUS.BAD_REQUEST
+            );
+          }
+
+          const bookingData = result.data;
+          console.log('Validated booking data:', bookingData);
+        } catch (error) {
+          console.error('❌ JSON parsing error:', error);
+          console.error('Raw body that failed:', rawBody);
+          return createErrorResponse(
+            'Invalid JSON in request body',
+            HTTP_STATUS.BAD_REQUEST
+          );
         }
 
-        const bookingData = validation.data;
+        const bookingData = CreateBookingRequestSchema.parse(JSON.parse(rawBody));
 
         // Verify service exists
         const { data: service, error: serviceError } = await supabase

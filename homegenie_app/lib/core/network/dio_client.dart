@@ -51,11 +51,14 @@ class DioClient {
           }
 
           if (kDebugMode) {
-            print('Request: ${options.method} ${options.uri}');
+            print('\n🔵 REQUEST DEBUG 🔵');
+            print('Method: ${options.method}');
+            print('URI: ${options.uri}');
             print('Headers: ${options.headers}');
-            if (options.data != null) {
-              print('Body: ${options.data}');
-            }
+            print('Content-Type: ${options.contentType}');
+            print('Data type: ${options.data.runtimeType}');
+            print('Data: ${options.data}');
+            print('🔵 END REQUEST 🔵\n');
           }
 
           handler.next(options);

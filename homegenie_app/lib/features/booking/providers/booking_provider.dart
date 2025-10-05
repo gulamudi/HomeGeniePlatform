@@ -88,8 +88,11 @@ class BookingNotifier extends StateNotifier<BookingState> {
 
   Future<String?> createBooking(WidgetRef ref) async {
     // Validate required fields
-    if (state.serviceId == null || state.selectedDate == null || state.selectedTimeSlot == null) {
-      throw Exception('Service, date, and time are required');
+    if (state.serviceId == null ||
+        state.selectedDate == null ||
+        state.selectedTimeSlot == null ||
+        state.selectedAddress == null) {
+      throw Exception('Service, date, time, and address are required');
     }
 
     try {
@@ -118,6 +121,9 @@ class BookingNotifier extends StateNotifier<BookingState> {
         minute,
       );
 
+      // Convert to UTC and ensure proper ISO 8601 format with timezone
+      final scheduledDateTimeUtc = scheduledDateTime.toUtc();
+
       // Prepare address data in camelCase format
       final addressData = state.selectedAddress != null
           ? {
@@ -135,14 +141,23 @@ class BookingNotifier extends StateNotifier<BookingState> {
             }
           : null;
 
-      final response = await _apiService.createBooking({
+      // Build request payload, excluding null values
+      final Map<String, dynamic> requestData = {
         'serviceId': state.serviceId,
-        'scheduledDate': scheduledDateTime.toIso8601String(),
-        'durationHours': state.durationHours,
+        'scheduledDate': scheduledDateTimeUtc.toIso8601String(),
+        'durationHours': state.durationHours ?? 1.0, // Default to 1 hour if not set
         'address': addressData,
-        'paymentMethod': state.paymentMethod,
-        'specialInstructions': state.specialInstructions,
-      });
+        'paymentMethod': state.paymentMethod ?? 'cash', // Default to cash if not set
+      };
+
+      // Add optional fields only if they have values
+      if (state.specialInstructions != null && state.specialInstructions!.isNotEmpty) {
+        requestData['specialInstructions'] = state.specialInstructions;
+      }
+
+      print('📤 Creating booking with data: $requestData');
+
+      final response = await _apiService.createBooking(requestData);
 
       if (response.success && response.data != null) {
         final bookingData = response.data as Map<String, dynamic>;
