@@ -210,7 +210,13 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
     try {
       final response = await _apiService.getBookings(null, null, null, null, null);
       if (response.success && response.data != null) {
-        final bookingsList = (response.data as List)
+        // Handle the wrapped response structure: { bookings: [...], pagination: {...} }
+        final responseData = response.data;
+        final bookingsData = responseData is Map<String, dynamic>
+            ? (responseData['bookings'] as List?) ?? []
+            : (responseData as List? ?? []);
+
+        final bookingsList = bookingsData
             .map((json) => Booking.fromJson(json as Map<String, dynamic>))
             .toList();
         state = bookingsList;

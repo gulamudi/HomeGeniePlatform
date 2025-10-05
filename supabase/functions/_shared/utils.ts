@@ -33,7 +33,7 @@ export const createSupabaseClient = () => {
 // Response helpers
 export const createResponse = <T>(
   data: T,
-  status = HTTP_STATUS.OK,
+  status: number,
   message?: string
 ): Response => {
   const response: ApiResponse<T> = {
@@ -50,7 +50,7 @@ export const createResponse = <T>(
 
 export const createErrorResponse = (
   error: string,
-  status = HTTP_STATUS.BAD_REQUEST,
+  status: number,
   message?: string
 ): Response => {
   const response: ApiResponse<null> = {
@@ -77,7 +77,7 @@ export const validateRequestBody = async <T>(
     if (!result.success) {
       return {
         success: false,
-        error: `Validation failed: ${result.error.errors.map(e => e.message).join(', ')}`,
+        error: `Validation failed: ${result.error.errors.map((e: any) => e.message).join(', ')}`,
       };
     }
 

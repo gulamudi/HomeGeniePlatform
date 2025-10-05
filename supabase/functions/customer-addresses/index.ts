@@ -60,9 +60,19 @@ Deno.serve(async (req) => {
         return createErrorResponse(validation.error, HTTP_STATUS.BAD_REQUEST);
       }
 
+      const addressData = validation.data as any;
       const newAddress = {
         id: crypto.randomUUID(),
-        ...validation.data,
+        flatHouseNo: addressData.flatHouseNo,
+        buildingApartmentName: addressData.buildingApartmentName,
+        streetName: addressData.streetName,
+        landmark: addressData.landmark,
+        area: addressData.area,
+        city: addressData.city,
+        state: addressData.state,
+        pinCode: addressData.pinCode,
+        type: addressData.type || 'home',
+        isDefault: addressData.isDefault || false,
       };
 
       // Get current addresses
@@ -147,15 +157,28 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Build the update object with proper camelCase field names
+      const addressUpdate: any = {};
+      if (updateData.flatHouseNo !== undefined) addressUpdate.flatHouseNo = updateData.flatHouseNo;
+      if (updateData.buildingApartmentName !== undefined) addressUpdate.buildingApartmentName = updateData.buildingApartmentName;
+      if (updateData.streetName !== undefined) addressUpdate.streetName = updateData.streetName;
+      if (updateData.landmark !== undefined) addressUpdate.landmark = updateData.landmark;
+      if (updateData.area !== undefined) addressUpdate.area = updateData.area;
+      if (updateData.city !== undefined) addressUpdate.city = updateData.city;
+      if (updateData.state !== undefined) addressUpdate.state = updateData.state;
+      if (updateData.pinCode !== undefined) addressUpdate.pinCode = updateData.pinCode;
+      if (updateData.type !== undefined) addressUpdate.type = updateData.type;
+      if (updateData.isDefault !== undefined) addressUpdate.isDefault = updateData.isDefault;
+
       // Update the address
       let updatedAddresses = [...currentAddresses];
       updatedAddresses[addressIndex] = {
         ...updatedAddresses[addressIndex],
-        ...updateData,
+        ...addressUpdate,
       };
 
       // If this is set as default, unset other defaults
-      if (updateData.isDefault) {
+      if (addressUpdate.isDefault) {
         updatedAddresses = updatedAddresses.map((addr: any, index: number) => ({
           ...addr,
           isDefault: index === addressIndex,
@@ -184,12 +207,24 @@ Deno.serve(async (req) => {
 
     } else if (req.method === 'DELETE') {
       // Delete address
-      const validation = await validateRequestBody(req, DeleteAddressRequestSchema);
-      if (!validation.success) {
-        return createErrorResponse(validation.error, HTTP_STATUS.BAD_REQUEST);
+      let addressId: string;
+
+      // Try to get addressId from request body first, then fall back to query param
+      try {
+        const body = await req.json();
+        addressId = body.id || body.addressId;
+      } catch {
+        // If body parsing fails, try query parameter
+        const url = new URL(req.url);
+        addressId = url.searchParams.get('id') || url.searchParams.get('addressId') || '';
       }
 
-      const { addressId } = validation.data;
+      if (!addressId) {
+        return createErrorResponse(
+          'Address ID is required',
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
 
       // Get current addresses
       const { data: currentProfile, error: fetchError } = await supabase
@@ -237,7 +272,7 @@ Deno.serve(async (req) => {
       );
 
     } else {
-      return createErrorResponse('Method not allowed', HTTP_STATUS.NOT_FOUND);
+      return createErrorResponse('Method not allowed', HTTP_STATUS.METHOD_NOT_ALLOWED);
     }
 
   } catch (error) {
