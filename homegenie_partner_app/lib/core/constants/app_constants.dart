@@ -11,8 +11,6 @@ class AppConstants {
   static const String routeJobStarted = '/job-started';
   static const String routeJobCompleted = '/job-completed';
   static const String routeCancelJob = '/cancel-job';
-  static const String routeEarnings = '/earnings';
-  static const String routePreferences = '/preferences';
   static const String routeProfile = '/profile';
   static const String routeSupport = '/support';
   static const String routePaymentGuide = '/payment-guide';

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../main.dart';
 
 class OnboardingNotifier extends StateNotifier<bool> {
   OnboardingNotifier() : super(false);

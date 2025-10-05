@@ -36,7 +36,34 @@ Deno.serve(async (req) => {
     const path = url.pathname;
 
     if (req.method === 'GET') {
-      if (path.includes('/available')) {
+      // Check if requesting a specific job by ID (e.g., /partner-jobs/123)
+      const jobIdMatch = path.match(/\/partner-jobs\/([^\/]+)$/);
+      if (jobIdMatch && jobIdMatch[1] && !path.includes('/available') && !path.includes('/assigned') && !path.includes('/preferences')) {
+        const jobId = jobIdMatch[1];
+
+        // Get specific job details
+        const { data: job, error } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            service:services(*),
+            customer:users!customer_id(full_name, phone, avatar_url),
+            booking_timeline(*),
+            ratings(*)
+          `)
+          .eq('id', jobId)
+          .eq('partner_id', user.id)
+          .single();
+
+        if (error || !job) {
+          return createErrorResponse(
+            'Job not found or access denied',
+            HTTP_STATUS.NOT_FOUND
+          );
+        }
+
+        return createResponse(job, HTTP_STATUS.OK);
+      } else if (path.includes('/available')) {
         // Get available jobs
         const radius = parseInt(url.searchParams.get('radius') || '10');
         const serviceCategory = url.searchParams.get('serviceCategory');

@@ -10,11 +10,8 @@ import '../../features/jobs/screens/job_details_screen.dart';
 import '../../features/jobs/screens/job_in_progress_screen.dart';
 import '../../features/jobs/screens/job_completed_screen.dart';
 import '../../features/jobs/screens/cancel_job_screen.dart';
-import '../../features/earnings/screens/earnings_screen.dart';
-import '../../features/preferences/screens/preferences_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/support_screen.dart';
-import '../../features/support/screens/support_screen.dart' as support;
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
 
@@ -118,14 +115,6 @@ class AppRouter {
           final jobId = state.uri.queryParameters['jobId'] ?? '';
           return CancelJobScreen(jobId: jobId);
         },
-      ),
-      GoRoute(
-        path: AppConstants.routeEarnings,
-        builder: (context, state) => const EarningsScreen(),
-      ),
-      GoRoute(
-        path: AppConstants.routePreferences,
-        builder: (context, state) => const PreferencesScreen(),
       ),
       GoRoute(
         path: AppConstants.routeProfile,

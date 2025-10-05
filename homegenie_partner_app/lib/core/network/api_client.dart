@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ApiClient {
   late final Dio _dio;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   ApiClient({String? baseUrl}) {
     _dio = Dio(BaseOptions(
@@ -14,6 +16,41 @@ class ApiClient {
       },
     ));
 
+    _setupInterceptors();
+  }
+
+  void _setupInterceptors() {
+    // Request interceptor for adding auth token from Supabase session
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // Get token from Supabase session (same as consumer app)
+          String? token = _supabase.auth.currentSession?.accessToken;
+
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+
+          print('\n🔵 PARTNER APP REQUEST 🔵');
+          print('Method: ${options.method}');
+          print('URI: ${options.uri}');
+          print('Has Auth Token: ${token != null}');
+          print('Headers: ${options.headers}');
+          print('🔵 END REQUEST 🔵\n');
+
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          print('✅ Response: ${response.statusCode} ${response.requestOptions.uri}');
+          handler.next(response);
+        },
+        onError: (error, handler) {
+          print('❌ API Error: ${error.response?.statusCode} - ${error.message}');
+          handler.next(error);
+        },
+      ),
+    );
+
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
@@ -21,11 +58,13 @@ class ApiClient {
   }
 
   void setAuthToken(String token) {
-    _dio.options.headers['Authorization'] = 'Bearer $token';
+    // Deprecated: Token is now automatically retrieved from Supabase session
+    // Kept for backward compatibility but does nothing
   }
 
   void clearAuthToken() {
-    _dio.options.headers.remove('Authorization');
+    // Deprecated: Token is now automatically retrieved from Supabase session
+    // Kept for backward compatibility but does nothing
   }
 
   // Auth endpoints
@@ -56,15 +95,18 @@ class ApiClient {
   }
 
   // Job endpoints
-  Future<Response> getJobs({String? status, String? date}) {
-    return _dio.get('/partners/jobs', queryParameters: {
+  Future<Response> getAssignedJobs({String? status, String? fromDate, String? toDate, int page = 1, int limit = 20}) {
+    return _dio.get('/functions/v1/partner-jobs/assigned', queryParameters: {
       if (status != null) 'status': status,
-      if (date != null) 'date': date,
+      if (fromDate != null) 'fromDate': fromDate,
+      if (toDate != null) 'toDate': toDate,
+      'page': page.toString(),
+      'limit': limit.toString(),
     });
   }
 
   Future<Response> getJobDetails(String jobId) {
-    return _dio.get('/partners/jobs/$jobId');
+    return _dio.get('/functions/v1/partner-jobs/$jobId');
   }
 
   Future<Response> acceptJob(String jobId) {
@@ -89,19 +131,6 @@ class ApiClient {
     return _dio.post('/partners/jobs/$jobId/cancel', data: {
       'reason': reason,
     });
-  }
-
-  // Earnings endpoints
-  Future<Response> getEarningsSummary(String partnerId) {
-    return _dio.get('/partners/$partnerId/earnings/summary');
-  }
-
-  Future<Response> getEarningsTransactions(String partnerId) {
-    return _dio.get('/partners/$partnerId/earnings/transactions');
-  }
-
-  Future<Response> requestWithdrawal(String partnerId, Map<String, dynamic> data) {
-    return _dio.post('/partners/$partnerId/earnings/withdraw', data: data);
   }
 
   // Document endpoints

@@ -5,6 +5,7 @@ import 'package:shared/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/jobs_provider.dart';
 import '../../jobs/widgets/job_card.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _currentBottomNavIndex = 0;
 
   @override
   void initState() {
@@ -34,35 +34,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      appBar: _currentBottomNavIndex == 0 ? _buildAppBar() : null,
+      appBar: _buildAppBar(),
       body: _buildBody(),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final authState = ref.watch(authProvider);
+    final profilePhoto = authState.partner?.profilePhoto;
+
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundImage: NetworkImage(
-              'https://via.placeholder.com/150',
+          GestureDetector(
+            onTap: () => context.push(AppConstants.routeProfile),
+            child: CircleAvatar(
+              radius: 20,
+              backgroundImage: profilePhoto != null
+                  ? NetworkImage(profilePhoto)
+                  : null,
+              backgroundColor: AppTheme.primaryBlue,
+              child: profilePhoto == null
+                  ? const Icon(Icons.person, color: Colors.white)
+                  : null,
             ),
           ),
-          Expanded(
-            child: Text(
-              'HomeGenie Partner',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-          const SizedBox(width: 32),
         ],
       ),
       bottom: PreferredSize(
@@ -106,19 +105,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildBody() {
-    switch (_currentBottomNavIndex) {
-      case 0:
-        return _buildJobsTab();
-      case 1:
-        return _buildEarningsPlaceholder();
-      case 2:
-        return _buildPreferencesPlaceholder();
-      default:
-        return _buildJobsTab();
-    }
-  }
-
-  Widget _buildJobsTab() {
     return TabBarView(
       controller: _tabController,
       children: [
@@ -208,68 +194,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: AppTheme.textSecondary,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEarningsPlaceholder() {
-    return const Center(child: Text('Earnings Screen'));
-  }
-
-  Widget _buildPreferencesPlaceholder() {
-    return const Center(child: Text('Preferences Screen'));
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.black12, width: 1),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _currentBottomNavIndex,
-        onTap: (index) {
-          setState(() => _currentBottomNavIndex = index);
-          if (index == 1) {
-            context.push(AppConstants.routeEarnings);
-          } else if (index == 3) {
-            context.push(AppConstants.routeProfile);
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.primaryBlue,
-        unselectedItemColor: AppTheme.textSecondary,
-        selectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-        ),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work_outline),
-            activeIcon: Icon(Icons.work),
-            label: 'Jobs',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: Icon(Icons.account_balance_wallet),
-            label: 'Wallet',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
           ),
         ],
       ),
