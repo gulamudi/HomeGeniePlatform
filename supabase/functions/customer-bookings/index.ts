@@ -168,7 +168,15 @@ Deno.serve(async (req) => {
           .single();
 
         if (bookingError) {
-          console.error('Error creating booking:', bookingError);
+          console.error('❌ Database insert failed: Unable to create booking');
+          console.error(`  Error Code: ${bookingError.code || 'UNKNOWN'}`);
+          console.error(`  Error Message: ${bookingError.message}`);
+          console.error(`  Error Details: ${JSON.stringify(bookingError.details || {})}`);
+          console.error('  Possible causes:');
+          console.error('    1. Supabase is not running (run: supabase start)');
+          console.error('    2. Table "bookings" does not exist or migration pending');
+          console.error('    3. Foreign key constraint violation (invalid service_id)');
+          console.error('    4. Required field missing in request');
           return createErrorResponse(
             'Failed to create booking',
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -260,7 +268,15 @@ Deno.serve(async (req) => {
         const { data: bookings, error, count } = await query;
 
         if (error) {
-          console.error('Error fetching bookings:', error);
+          console.error('❌ Database query failed: Unable to fetch bookings');
+          console.error(`  Error Code: ${error.code || 'UNKNOWN'}`);
+          console.error(`  Error Message: ${error.message}`);
+          console.error(`  Error Details: ${JSON.stringify(error.details || {})}`);
+          console.error('  Possible causes:');
+          console.error('    1. Supabase is not running (run: supabase start)');
+          console.error('    2. Database migration not applied');
+          console.error('    3. Table "bookings" does not exist');
+          console.error('    4. Invalid query parameters or filters');
           return createErrorResponse(
             'Failed to fetch bookings',
             HTTP_STATUS.INTERNAL_SERVER_ERROR

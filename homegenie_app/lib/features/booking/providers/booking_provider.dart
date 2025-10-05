@@ -147,6 +147,17 @@ class BookingNotifier extends StateNotifier<BookingState> {
       return null;
     } catch (e) {
       // Fallback to mock implementation for development
+      print('\n⚠️  FALLING BACK TO MOCK DATA ⚠️');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Reason: Failed to create booking in database');
+      print('Error: $e');
+      print('Impact: Booking created locally but NOT saved to database');
+      print('Action Required:');
+      print('  1. Fix the database connection issues');
+      print('  2. Re-create the booking once database is working');
+      print('  3. This mock booking will be lost on app restart');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
       await Future.delayed(const Duration(seconds: 1));
       final bookingId = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -203,10 +214,21 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
             .map((json) => Booking.fromJson(json as Map<String, dynamic>))
             .toList();
         state = bookingsList;
+        print('✓ Successfully loaded ${bookingsList.length} bookings from database');
         return;
       }
     } catch (e) {
       // Fallback to mock data for development
+      print('\n⚠️  FALLING BACK TO MOCK DATA ⚠️');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Reason: Failed to fetch bookings from database');
+      print('Error: $e');
+      print('Impact: Showing mock/dummy bookings instead of real data');
+      print('Action Required:');
+      print('  1. Ensure Supabase is running (supabase start)');
+      print('  2. Check database connection and migrations');
+      print('  3. Verify edge functions are deployed');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     }
 
     // Mock bookings data
@@ -286,6 +308,7 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
       );
 
       if (response.success) {
+        print('✓ Successfully cancelled booking in database: $bookingId');
         state = state.map((booking) {
           if (booking.id == bookingId) {
             return Booking(
@@ -308,6 +331,16 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
       }
     } catch (e) {
       // Fallback to mock implementation
+      print('\n⚠️  FALLING BACK TO MOCK CANCELLATION ⚠️');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('Reason: Failed to cancel booking in database');
+      print('Error: $e');
+      print('Impact: Booking cancelled locally but NOT in database');
+      print('Action Required:');
+      print('  1. Fix database connection');
+      print('  2. Manually cancel booking ID: $bookingId in database');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
       state = state.map((booking) {
         if (booking.id == bookingId) {
           return Booking(

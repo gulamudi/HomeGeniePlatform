@@ -54,6 +54,7 @@ dependencies:
 
   # Notifications
   flutter_local_notifications: ^16.1.0
+  supabase_flutter: ^2.10.2
 
 dev_dependencies:
   flutter_test:

@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/models/user.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared/config/app_config.dart';
+import '../../../core/models/user.dart' as app_user;
 import '../../../core/storage/storage_service.dart';
+import '../../../core/constants/app_constants.dart';
 
 // Auth State
 class AuthState {
-  final User? user;
+  final app_user.User? user;
   final bool isLoading;
   final String? error;
 
@@ -15,7 +18,7 @@ class AuthState {
   });
 
   AuthState copyWith({
-    User? user,
+    app_user.User? user,
     bool? isLoading,
     String? error,
   }) {
@@ -29,22 +32,77 @@ class AuthState {
 
 // Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
+  final SupabaseClient _supabase = Supabase.instance.client;
+
+  AuthNotifier() : super(const AuthState()) {
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    // Check if there's an existing session
+    final session = _supabase.auth.currentSession;
+    if (session != null) {
+      await _loadUserFromSession(session);
+    }
+
+    // Listen to auth state changes
+    _supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        _loadUserFromSession(session);
+      } else {
+        state = const AuthState();
+      }
+    });
+  }
+
+  Future<void> _loadUserFromSession(Session session) async {
+    try {
+      // Store the access token for API calls
+      await StorageService.setString(AppConstants.userTokenKey, session.accessToken);
+
+      // Get user data from database
+      final response = await _supabase
+          .from('users')
+          .select()
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+      if (response != null) {
+        // Convert snake_case response to camelCase for User model
+        final userJson = {
+          'id': response['id'],
+          'email': response['email'],
+          'phone': response['phone'],
+          'fullName': response['full_name'],
+          'avatarUrl': response['avatar_url'],
+          'userType': response['user_type'],
+          'createdAt': response['created_at'],
+          'updatedAt': response['updated_at'],
+        };
+
+        final user = app_user.User.fromJson(userJson);
+        await StorageService.setObject('user', user.toJson());
+        await StorageService.setBool('authenticated', true);
+
+        state = state.copyWith(user: user, isLoading: false);
+      } else {
+        // User doesn't exist in DB yet - this is handled by verifyOtp
+        print('⏳ User not found in DB yet, will be created by verifyOtp');
+        state = state.copyWith(isLoading: false);
+      }
+    } catch (e) {
+      print('Error loading user from session: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
 
   Future<void> checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
     try {
-      final isAuthenticated = StorageService.getBool('authenticated');
-      if (isAuthenticated == true) {
-        final userData = StorageService.getObject('user');
-        if (userData != null) {
-          state = state.copyWith(
-            user: User.fromJson(userData),
-            isLoading: false,
-          );
-        } else {
-          state = state.copyWith(isLoading: false);
-        }
+      final session = _supabase.auth.currentSession;
+      if (session != null) {
+        await _loadUserFromSession(session);
       } else {
         state = state.copyWith(isLoading: false);
       }
@@ -62,17 +120,46 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     state = state.copyWith(isLoading: true);
     try {
-      // In a real app, this would call the API to send OTP
-      // For now, we just store the phone number and simulate success
-      await StorageService.setString('pending_phone', phone);
-      
-      // Return mock response similar to what might come from backend
+      print('═════════════════════════════════════════════════');
+      print('🔐 REQUEST OTP DEBUG');
+      print('📱 Input phone: $phone');
+
+      // Format phone number (add +91 if not present)
+      final formattedPhone = phone.startsWith('+') ? phone : '+91$phone';
+      print('📱 Formatted phone: $formattedPhone');
+      print('👤 User type: $userType');
+      print('═════════════════════════════════════════════════');
+
+      // Send OTP via Supabase Auth (works with test OTP from config.toml)
+      print('⏳ Calling signInWithOtp...');
+      await _supabase.auth.signInWithOtp(
+        phone: formattedPhone,
+      );
+
+      print('✅ OTP sent to: $formattedPhone');
+      print('🔑 Use OTP: 123456 for test number 9999999999');
+
+      // Store pending phone and user type
+      await StorageService.setString('pending_phone', formattedPhone);
+      await StorageService.setString('pending_user_type', userType);
+
       state = state.copyWith(isLoading: false);
       return {
         'success': true,
-        'sessionId': DateTime.now().millisecondsSinceEpoch.toString(),
+        'phone': formattedPhone,
       };
     } catch (e) {
+      print('═════════════════════════════════════════════════');
+      print('❌ ERROR SENDING OTP');
+      print('Error type: ${e.runtimeType}');
+      print('Error message: $e');
+      if (e is AuthApiException) {
+        print('Status code: ${e.statusCode}');
+        print('Error code: ${e.code}');
+        print('Message: ${e.message}');
+      }
+      print('═════════════════════════════════════════════════');
+
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -87,12 +174,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String phoneNumber) async {
     state = state.copyWith(isLoading: true);
     try {
-      // In a real app, this would call the API to send OTP
-      // For now, we just store the phone number
-      await StorageService.setString('pending_phone', phoneNumber);
+      // Format phone number
+      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+91$phoneNumber';
+
+      // Send OTP via Supabase Auth (works with test OTP from config.toml)
+      await _supabase.auth.signInWithOtp(phone: formattedPhone);
+
+      print('📱 OTP sent to: $formattedPhone');
+      print('🔑 Use OTP: 123456 for test number 9999999999');
+
+      await StorageService.setString('pending_phone', formattedPhone);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
+      print('❌ Error sending OTP: $e');
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -104,20 +199,93 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyOtp(String phoneNumber, String otp) async {
     state = state.copyWith(isLoading: true);
     try {
-      // In a real app, this would verify OTP with backend
-      // For testing, we use the bypass from AppConfig
+      // Format phone number
+      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+91$phoneNumber';
 
-      // Create a mock user
-      final user = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        phone: phoneNumber,
-        full_name: 'Test User',
-        user_type: 'customer',
-        created_at: DateTime.now(),
-        updated_at: DateTime.now(),
+      // Verify OTP with Supabase (works with test OTP from config.toml)
+      final response = await _supabase.auth.verifyOTP(
+        phone: formattedPhone,
+        token: otp,
+        type: OtpType.sms,
       );
 
-      // Save user data
+      if (response.session == null) {
+        throw Exception('No session returned after OTP verification');
+      }
+
+      print('✅ OTP verified successfully');
+
+      // Store access token
+      await StorageService.setString(AppConstants.userTokenKey, response.session!.accessToken);
+
+      // Check if user exists in our users table
+      final existingUser = await _supabase
+          .from('users')
+          .select()
+          .eq('id', response.user!.id)
+          .maybeSingle();
+
+      app_user.User user;
+      if (existingUser == null) {
+        // Create new user in database
+        final userType = await StorageService.getString('pending_user_type') ?? 'customer';
+
+        print('🔨 Creating new user in database...');
+        print('📋 User ID: ${response.user!.id}');
+        print('📱 Phone: $formattedPhone');
+        print('👤 User type: $userType');
+
+        final userData = {
+          'id': response.user!.id,
+          'phone': formattedPhone,
+          'user_type': userType,  // Database uses snake_case
+          'full_name': 'User ${formattedPhone.substring(formattedPhone.length - 4)}',  // Database uses snake_case
+        };
+
+        final newUser = await _supabase
+            .from('users')
+            .insert(userData)
+            .select()
+            .single();
+
+        print('✅ Database response (raw): $newUser');
+
+        // Convert snake_case response to camelCase for User model
+        final userJson = {
+          'id': newUser['id'],
+          'email': newUser['email'],
+          'phone': newUser['phone'],
+          'fullName': newUser['full_name'],
+          'avatarUrl': newUser['avatar_url'],
+          'userType': newUser['user_type'],
+          'createdAt': newUser['created_at'],
+          'updatedAt': newUser['updated_at'],
+        };
+
+        print('✅ Converted to camelCase: $userJson');
+        user = app_user.User.fromJson(userJson);
+        print('✨ Created new user: ${user.full_name}');
+      } else {
+        print('✅ Database response (raw): $existingUser');
+
+        // Convert snake_case response to camelCase for User model
+        final userJson = {
+          'id': existingUser['id'],
+          'email': existingUser['email'],
+          'phone': existingUser['phone'],
+          'fullName': existingUser['full_name'],
+          'avatarUrl': existingUser['avatar_url'],
+          'userType': existingUser['user_type'],
+          'createdAt': existingUser['created_at'],
+          'updatedAt': existingUser['updated_at'],
+        };
+
+        print('✅ Converted to camelCase: $userJson');
+        user = app_user.User.fromJson(userJson);
+        print('👤 Found existing user: ${user.full_name}');
+      }
+
+      // Save user data locally
       await StorageService.setObject('user', user.toJson());
       await StorageService.setBool('authenticated', true);
 
@@ -128,6 +296,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       return true;
     } catch (e) {
+      print('❌ OTP verification error: $e');
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -137,11 +306,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    await _supabase.auth.signOut();
     await StorageService.clear();
     state = const AuthState();
   }
 
-  void updateUser(User user) {
+  void updateUser(app_user.User user) {
     state = state.copyWith(user: user);
     StorageService.setObject('user', user.toJson());
   }
@@ -152,6 +322,6 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier();
 });
 
-final currentUserProvider = Provider<User?>((ref) {
+final currentUserProvider = Provider<app_user.User?>((ref) {
   return ref.watch(authProvider).user;
 });

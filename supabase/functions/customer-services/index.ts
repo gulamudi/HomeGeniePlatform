@@ -75,7 +75,15 @@ Deno.serve(async (req) => {
         const { data: services, error, count } = await query;
 
         if (error) {
-          console.error('Error fetching services:', error);
+          console.error('❌ Database query failed: Unable to fetch services');
+          console.error(`  Error Code: ${error.code || 'UNKNOWN'}`);
+          console.error(`  Error Message: ${error.message}`);
+          console.error(`  Error Details: ${JSON.stringify(error.details || {})}`);
+          console.error('  Possible causes:');
+          console.error('    1. Supabase is not running (run: supabase start)');
+          console.error('    2. Database migration not applied');
+          console.error('    3. Network connectivity issue');
+          console.error('    4. Table "services" does not exist');
           return createErrorResponse(
             'Failed to fetch services',
             HTTP_STATUS.INTERNAL_SERVER_ERROR

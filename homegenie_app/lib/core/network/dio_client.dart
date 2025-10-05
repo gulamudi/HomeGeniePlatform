@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
 
 class DioClient {
   static DioClient? _instance;
   late Dio _dio;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   DioClient._internal() {
     _dio = Dio(
@@ -36,7 +38,14 @@ class DioClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await StorageService.getString(AppConstants.userTokenKey);
+          // Try to get token from Supabase session first (most reliable)
+          String? token = _supabase.auth.currentSession?.accessToken;
+
+          // Fallback to storage if no active session
+          if (token == null) {
+            token = await StorageService.getString(AppConstants.userTokenKey);
+          }
+
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -60,8 +69,10 @@ class DioClient {
         },
         onError: (error, handler) async {
           if (kDebugMode) {
-            print('Error: ${error.response?.statusCode} ${error.requestOptions.uri}');
-            print('Error Data: ${error.response?.data}');
+            print('\n❌ API ERROR OCCURRED ❌');
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            _logDetailedError(error);
+            print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
           }
 
           // Handle token expiry
@@ -137,5 +148,80 @@ class DioClient {
 
   void updateBaseUrl(String newBaseUrl) {
     _dio.options.baseUrl = newBaseUrl;
+  }
+
+  void _logDetailedError(DioException error) {
+    print('Request: ${error.requestOptions.method} ${error.requestOptions.uri}');
+
+    // Categorize the error
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        print('Error Type: ⏱️  TIMEOUT');
+        print('Issue: Request timed out after ${_dio.options.connectTimeout?.inSeconds}s');
+        print('Possible causes:');
+        print('  1. Supabase edge functions not running');
+        print('  2. Network connectivity issues');
+        print('  3. Server is overloaded');
+        print('Fix: Run "supabase start" in your project directory');
+        break;
+
+      case DioExceptionType.connectionError:
+        print('Error Type: 🔌 CONNECTION ERROR');
+        print('Issue: Cannot connect to ${error.requestOptions.baseUrl}');
+        print('Possible causes:');
+        print('  1. Supabase is not running locally');
+        print('  2. Wrong base URL configured');
+        print('  3. Network/firewall blocking connection');
+        print('Fix: Run "supabase start" and verify URL is http://127.0.0.1:54321/functions/v1');
+        break;
+
+      case DioExceptionType.badResponse:
+        final statusCode = error.response?.statusCode;
+        print('Error Type: 📡 HTTP ${statusCode ?? "UNKNOWN"}');
+
+        if (statusCode == 401) {
+          print('Issue: Authentication failed');
+          print('Possible causes:');
+          print('  1. Invalid or expired auth token');
+          print('  2. User not logged in');
+          print('Fix: Re-authenticate the user');
+        } else if (statusCode == 404) {
+          print('Issue: Endpoint not found');
+          print('Possible causes:');
+          print('  1. Edge function not deployed');
+          print('  2. Wrong endpoint path');
+          print('Fix: Verify edge function exists and is running');
+        } else if (statusCode == 500) {
+          print('Issue: Server error');
+          print('Possible causes:');
+          print('  1. Database not initialized');
+          print('  2. Edge function crashed');
+          print('  3. Missing environment variables');
+          print('Fix: Check edge function logs for details');
+        }
+
+        if (error.response?.data != null) {
+          print('Response Data: ${error.response?.data}');
+        }
+        break;
+
+      case DioExceptionType.cancel:
+        print('Error Type: 🚫 REQUEST CANCELLED');
+        break;
+
+      case DioExceptionType.unknown:
+        print('Error Type: ❓ UNKNOWN ERROR');
+        print('Issue: ${error.message ?? "Unknown error occurred"}');
+        print('Possible causes:');
+        print('  1. Network completely unavailable');
+        print('  2. Unexpected exception in request');
+        break;
+
+      default:
+        print('Error Type: ${error.type}');
+        print('Message: ${error.message}');
+    }
   }
 }

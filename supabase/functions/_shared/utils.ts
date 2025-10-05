@@ -4,9 +4,23 @@ import { ApiResponse, HTTP_STATUS } from './types.ts';
 
 // Database client
 export const createSupabaseClient = () => {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  // Log environment configuration status
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('❌ CRITICAL: Supabase environment variables missing!');
+    console.error(`  SUPABASE_URL: ${supabaseUrl ? '✓ Set' : '✗ MISSING'}`);
+    console.error(`  SUPABASE_SERVICE_ROLE_KEY: ${serviceRoleKey ? '✓ Set' : '✗ MISSING'}`);
+    console.error('  Fix: Ensure Supabase is running locally or env vars are configured');
+  } else {
+    console.log('✓ Supabase client initialized successfully');
+    console.log(`  URL: ${supabaseUrl}`);
+  }
+
   return createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    supabaseUrl ?? '',
+    serviceRoleKey ?? '',
     {
       auth: {
         autoRefreshToken: false,
@@ -80,6 +94,8 @@ export const validateRequestBody = async <T>(
 export const getAuthUser = async (request: Request) => {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
+    console.warn('⚠️  Authentication failed: No Bearer token provided');
+    console.warn('  Fix: Ensure the client app is sending Authorization header');
     return null;
   }
 
@@ -88,9 +104,13 @@ export const getAuthUser = async (request: Request) => {
 
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) {
+    console.error('❌ Authentication failed: Invalid or expired token');
+    console.error(`  Error: ${error?.message || 'User not found'}`);
+    console.error('  Fix: User may need to re-authenticate');
     return null;
   }
 
+  console.log(`✓ User authenticated: ${user.id}`);
   return user;
 };
 
