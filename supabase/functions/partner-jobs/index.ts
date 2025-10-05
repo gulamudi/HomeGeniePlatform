@@ -182,7 +182,13 @@ Deno.serve(async (req) => {
 
         // Apply filters
         if (status) {
-          query = query.eq('status', status);
+          // Handle multiple status values (comma-separated)
+          const statusValues = status.split(',').map(s => s.trim());
+          if (statusValues.length > 1) {
+            query = query.in('status', statusValues);
+          } else {
+            query = query.eq('status', status);
+          }
         }
 
         if (fromDate) {

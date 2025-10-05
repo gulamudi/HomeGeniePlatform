@@ -19,7 +19,7 @@ final jobsProvider = FutureProvider.family<List<Job>, String>((ref, tab) async {
     case AppConstants.tabToday:
       fromDate = today.toIso8601String();
       toDate = today.add(const Duration(days: 1)).toIso8601String();
-      status = 'confirmed,in_progress,on_the_way';
+      status = 'confirmed,in_progress';
       break;
     case AppConstants.tabUpcoming:
       fromDate = today.add(const Duration(days: 1)).toIso8601String();
