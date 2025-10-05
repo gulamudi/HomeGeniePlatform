@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { PhoneSchema, ApiResponseSchema } from '../types/base';
-import { UserSchema, UserTypeSchema } from '../types/user';
+import { z } from 'npm:zod';
+import { PhoneSchema, ApiResponseSchema } from '../types/base.ts';
+import { UserSchema, UserTypeSchema } from '../types/user.ts';
 
 // Login request
 export const LoginRequestSchema = z.object({

@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { UuidSchema, TimestampSchema, AddressSchema } from './base';
+import { z } from 'npm:zod';
+import { UuidSchema, TimestampSchema, AddressSchema } from './base.ts';
 
 // Booking status
 export const BookingStatusSchema = z.enum([

@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { UuidSchema, TimestampSchema } from './base';
+import { z } from 'npm:zod';
+import { UuidSchema, TimestampSchema } from './base.ts';
 
 // Service categories
 export const ServiceCategorySchema = z.enum([

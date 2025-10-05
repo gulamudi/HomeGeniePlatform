@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import { UuidSchema, ApiResponseSchema, PaginationSchema } from '../types/base';
-import { PartnerProfileSchema, PartnerUserSchema, VerificationStatusSchema } from '../types/user';
-import { BookingSchema, BookingStatusSchema, JobPreferencesSchema } from '../types/booking';
+import { z } from 'npm:zod';
+import { UuidSchema, ApiResponseSchema, PaginationSchema } from '../types/base.ts';
+import { PartnerProfileSchema, PartnerUserSchema, VerificationStatusSchema } from '../types/user.ts';
+import { BookingSchema, BookingStatusSchema, JobPreferencesSchema } from '../types/booking.ts';
 
 // Get partner profile
 export const GetPartnerProfileResponseSchema = ApiResponseSchema(PartnerUserSchema);

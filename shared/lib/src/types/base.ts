@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'npm:zod';
 
 // Base types
 export const UuidSchema = z.string().uuid();

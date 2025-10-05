@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { UuidSchema, ApiResponseSchema, PaginationSchema, AddressSchema } from '../types/base';
-import { CustomerProfileSchema, CustomerUserSchema } from '../types/user';
-import { ServiceSchema } from '../types/service';
-import { BookingSchema, PaymentMethodSchema } from '../types/booking';
+import { z } from 'npm:zod';
+import { UuidSchema, ApiResponseSchema, PaginationSchema, AddressSchema } from '../types/base.ts';
+import { CustomerProfileSchema, CustomerUserSchema } from '../types/user.ts';
+import { ServiceSchema } from '../types/service.ts';
+import { BookingSchema, PaymentMethodSchema } from '../types/booking.ts';
 
 // Get customer profile
 export const GetCustomerProfileResponseSchema = ApiResponseSchema(CustomerUserSchema);

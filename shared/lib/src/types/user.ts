@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { UuidSchema, TimestampSchema, PhoneSchema, EmailSchema, AddressSchema } from './base';
+import { z } from 'npm:zod';
+import { UuidSchema, TimestampSchema, PhoneSchema, EmailSchema, AddressSchema } from './base.ts';
 
 // User types
 export const UserTypeSchema = z.enum(['customer', 'partner']);
