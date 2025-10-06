@@ -8,19 +8,43 @@ import '../../../auth/providers/auth_provider.dart';
 class ServiceSelectionPage extends ConsumerWidget {
   const ServiceSelectionPage({super.key});
 
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'cleaning':
+        return Icons.cleaning_services;
+      case 'plumbing':
+        return Icons.plumbing;
+      case 'electrical':
+        return Icons.electrical_services;
+      case 'gardening':
+        return Icons.park_outlined;
+      case 'handyman':
+        return Icons.handyman;
+      case 'beauty':
+        return Icons.face;
+      case 'appliance_repair':
+        return Icons.build;
+      case 'painting':
+        return Icons.format_paint;
+      case 'pest_control':
+        return Icons.pest_control;
+      case 'home_security':
+        return Icons.security;
+      default:
+        return Icons.home_repair_service;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final services = ref.watch(servicesProvider);
     final user = ref.watch(currentUserProvider);
 
-    // Group services by main categories
-    final mainCategories = [
-      {'name': 'Cleaning', 'icon': Icons.cleaning_services},
-      {'name': 'Plumbing', 'icon': Icons.plumbing},
-      {'name': 'Electrical', 'icon': Icons.electrical_services},
-      {'name': 'Gardening', 'icon': Icons.park_outlined},
-      {'name': 'Handyman', 'icon': Icons.handyman},
-    ];
+    // Group services by category
+    final uniqueCategories = services
+        .map((s) => s.category)
+        .toSet()
+        .toList();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -44,19 +68,22 @@ class ServiceSelectionPage extends ConsumerWidget {
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: mainCategories.length,
+              itemCount: uniqueCategories.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final category = mainCategories[index];
+                final category = uniqueCategories[index];
+                // Capitalize first letter of each word
+                final displayName = category.split('_').map((word) =>
+                  word[0].toUpperCase() + word.substring(1)
+                ).join(' ');
+
                 return _ServiceCard(
-                  name: category['name'] as String,
-                  icon: category['icon'] as IconData,
+                  name: displayName,
+                  icon: _getCategoryIcon(category),
                   onTap: () {
-                    // Find service by category
+                    // Find first service in this category
                     final service = services.firstWhere(
-                      (s) => s.category.toLowerCase() == (category['name'] as String).toLowerCase() ||
-                             s.name.toLowerCase().contains((category['name'] as String).toLowerCase()),
-                      orElse: () => services.first,
+                      (s) => s.category == category,
                     );
                     context.push('/service/${service.id}');
                   },

@@ -364,8 +364,10 @@ class _BookingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(serviceByIdProvider(booking.service_id));
-    final dateFormat = DateFormat('MMM dd, yyyy');
+    final dateFormat = DateFormat('EEE, dd MMM');
     final timeFormat = DateFormat('hh:mm a');
+    final partner = booking.partner;
+    final hasPartner = partner != null && booking.status != 'pending';
 
     return InkWell(
       onTap: () {
@@ -384,78 +386,184 @@ class _BookingCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    service?.name ?? 'Service',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: AppTheme.getStatusBackgroundColor(booking.status),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    color: AppTheme.primaryBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
-                  child: Text(
-                    booking.status.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.getStatusColor(booking.status),
-                    ),
+                  child: Icon(
+                    _getServiceIcon(service?.category ?? ''),
+                    color: AppTheme.primaryBlue,
+                    size: 24,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: AppTheme.textSecondary),
-                const SizedBox(width: 8),
-                Text(
-                  dateFormat.format(booking.scheduled_date),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Icon(Icons.access_time, size: 16, color: AppTheme.textSecondary),
-                const SizedBox(width: 8),
-                Text(
-                  timeFormat.format(booking.scheduled_date),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: AppTheme.textSecondary),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    '${booking.address['area']}, ${booking.address['city']}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        service?.name ?? 'Service',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${dateFormat.format(booking.scheduled_date)} - ${timeFormat.format(booking.scheduled_date)}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppTheme.iconSecondary,
+                  size: 20,
                 ),
               ],
             ),
+            if (hasPartner) ...[
+              const SizedBox(height: 12),
+              Container(
+                height: 1,
+                color: AppTheme.borderColor,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: partner['avatar_url'] != null
+                        ? ClipOval(
+                            child: Image.network(
+                              partner['avatar_url'],
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person,
+                                  color: AppTheme.primaryBlue,
+                                  size: 20,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            color: AppTheme.primaryBlue,
+                            size: 20,
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          partner['full_name'] ?? 'Partner',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              size: 14,
+                              color: Colors.amber,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getPartnerRating(partner),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getPartnerReviewCount(partner),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  IconData _getServiceIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'cleaning':
+        return Icons.cleaning_services;
+      case 'plumbing':
+        return Icons.plumbing;
+      case 'electrical':
+        return Icons.electrical_services;
+      case 'gardening':
+        return Icons.park_outlined;
+      case 'handyman':
+        return Icons.handyman;
+      default:
+        return Icons.home_repair_service;
+    }
+  }
+
+  String _getPartnerRating(Map<String, dynamic> partner) {
+    try {
+      final profiles = partner['partner_profiles'];
+      if (profiles is List && profiles.isNotEmpty) {
+        final rating = profiles[0]['rating'];
+        if (rating != null) {
+          return rating.toStringAsFixed(1);
+        }
+      }
+      return '0.0';
+    } catch (e) {
+      return '0.0';
+    }
+  }
+
+  String _getPartnerReviewCount(Map<String, dynamic> partner) {
+    try {
+      final profiles = partner['partner_profiles'];
+      if (profiles is List && profiles.isNotEmpty) {
+        final totalJobs = profiles[0]['total_jobs'];
+        if (totalJobs != null && totalJobs > 0) {
+          return '($totalJobs reviews)';
+        }
+      }
+      return '(No reviews)';
+    } catch (e) {
+      return '(No reviews)';
+    }
   }
 }

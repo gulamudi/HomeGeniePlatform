@@ -22,6 +22,7 @@ Booking _$BookingFromJson(Map<String, dynamic> json) => Booking(
       preferred_partner_id: json['preferredPartnerId'] as String?,
       created_at: DateTime.parse(json['createdAt'] as String),
       updated_at: DateTime.parse(json['updatedAt'] as String),
+      partner: json['partner'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$BookingToJson(Booking instance) => <String, dynamic>{
@@ -40,4 +41,5 @@ Map<String, dynamic> _$BookingToJson(Booking instance) => <String, dynamic>{
       'preferredPartnerId': instance.preferred_partner_id,
       'createdAt': instance.created_at.toIso8601String(),
       'updatedAt': instance.updated_at.toIso8601String(),
+      'partner': instance.partner,
     };

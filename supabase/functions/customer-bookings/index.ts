@@ -290,7 +290,12 @@ Deno.serve(async (req) => {
           .select(`
             *,
             service:services(*),
-            partner:users!partner_id(*)
+            partner:users!partner_id(
+              id,
+              full_name,
+              avatar_url,
+              partner_profiles(rating, total_jobs)
+            )
           `, { count: 'exact' })
           .eq('customer_id', user.id);
 

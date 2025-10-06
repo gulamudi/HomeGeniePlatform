@@ -233,6 +233,7 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
             return Booking(
               id: booking.id,
               customer_id: booking.customer_id,
+              partner_id: booking.partner_id,
               service_id: booking.service_id,
               status: 'cancelled',
               scheduled_date: booking.scheduled_date,
@@ -243,6 +244,7 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
               payment_status: booking.payment_status,
               created_at: booking.created_at,
               updated_at: DateTime.now(),
+              partner: booking.partner,
             );
           }
           return booking;

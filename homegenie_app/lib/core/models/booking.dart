@@ -49,6 +49,9 @@ class Booking {
   @JsonKey(name: 'updatedAt')
   final DateTime updated_at;
 
+  @JsonKey(name: 'partner')
+  final Map<String, dynamic>? partner;
+
   const Booking({
     required this.id,
     required this.customer_id,
@@ -65,6 +68,7 @@ class Booking {
     this.preferred_partner_id,
     required this.created_at,
     required this.updated_at,
+    this.partner,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) => _$BookingFromJson(json);
