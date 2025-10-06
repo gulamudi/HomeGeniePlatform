@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
 
 class JobCompletedScreen extends StatefulWidget {
   final String jobId;
@@ -281,7 +282,7 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // Submit feedback and return to home
-                    context.go('/');
+                    context.go(AppConstants.routeHome);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,
@@ -303,53 +304,6 @@ class _JobCompletedScreenState extends State<JobCompletedScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(context),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.black12),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.home, 'Home', true),
-              _buildNavItem(Icons.work_outline, 'Jobs', false),
-              _buildNavItem(Icons.account_balance_wallet_outlined, 'Wallet', false),
-              _buildNavItem(Icons.person_outline, 'Profile', false),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? AppTheme.primaryBlue : Colors.grey,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? AppTheme.primaryBlue : Colors.grey,
-          ),
-        ),
-      ],
     );
   }
 }

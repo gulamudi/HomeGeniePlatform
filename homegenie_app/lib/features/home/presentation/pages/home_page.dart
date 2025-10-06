@@ -164,7 +164,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.backgroundColor,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                   ),
                   child: Row(
@@ -235,7 +235,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Container(
               decoration: BoxDecoration(
-                color: AppTheme.backgroundColor,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TabBar(

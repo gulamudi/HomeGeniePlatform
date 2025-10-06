@@ -427,41 +427,9 @@ class JobDetailsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            // Bottom navigation
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home, 'Home', false),
-                _buildNavItem(Icons.work, 'Jobs', true),
-                _buildNavItem(Icons.account_balance_wallet, 'Wallet', false),
-                _buildNavItem(Icons.person, 'Profile', false),
-              ],
-            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive ? AppTheme.primaryBlue : Colors.grey,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? AppTheme.primaryBlue : Colors.grey,
-          ),
-        ),
-      ],
     );
   }
 

@@ -176,8 +176,6 @@ class _JobInProgressScreenState extends State<JobInProgressScreen> {
                 ],
               ),
             ),
-
-            _buildBottomNav(context),
           ],
         ),
       ),
@@ -243,40 +241,6 @@ class _JobInProgressScreenState extends State<JobInProgressScreen> {
           size: 20,
           color: AppTheme.primaryBlue,
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.black12),
-        ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.primaryBlue,
-        unselectedItemColor: AppTheme.textSecondary,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work_outline),
-            label: 'Jobs',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            label: 'Wallet',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

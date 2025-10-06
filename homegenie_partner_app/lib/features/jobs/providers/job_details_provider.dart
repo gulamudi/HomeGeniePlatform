@@ -1,14 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/job.dart';
-import '../../../core/services/supabase_service.dart';
+import '../../auth/providers/auth_provider.dart';
 
 final jobDetailsProvider = FutureProvider.family<Job, String>((ref, jobId) async {
-  final supabase = SupabaseService.instance;
+  final apiClient = ref.watch(apiClientProvider);
 
   try {
     print('🔵 [JobDetailsProvider] Fetching job details for: $jobId');
-    final booking = await supabase.getJobById(jobId);
+    final response = await apiClient.getJobDetails(jobId);
+    final data = response.data;
+
+    if (data == null || data['data'] == null) {
+      throw Exception('No data in response');
+    }
+
+    final booking = data['data'] as Map<String, dynamic>;
     print('✅ [JobDetailsProvider] Job details fetched successfully');
+    print('   Booking data: $booking');
     return _mapBookingToJob(booking);
   } catch (e, stackTrace) {
     print('❌ [JobDetailsProvider] Error fetching job details: $e');
@@ -18,9 +26,9 @@ final jobDetailsProvider = FutureProvider.family<Job, String>((ref, jobId) async
 });
 
 Job _mapBookingToJob(Map<String, dynamic> booking) {
-  // Supabase returns 'services' (plural) and 'users' from FK relation
-  final service = booking['services'] as Map<String, dynamic>?;
-  final customer = booking['users'] as Map<String, dynamic>?;
+  // API returns 'service' (singular) and 'customer' (singular)
+  final service = booking['service'] as Map<String, dynamic>?;
+  final customer = booking['customer'] as Map<String, dynamic>?;
 
   // Handle address - it can be either a String or a Map
   String addressString = '';

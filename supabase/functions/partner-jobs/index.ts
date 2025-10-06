@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       if (jobIdMatch && jobIdMatch[1] && !path.includes('/available') && !path.includes('/assigned') && !path.includes('/preferences')) {
         const jobId = jobIdMatch[1];
 
-        // Get specific job details
+        // Get specific job details - allow both assigned jobs and available (pending) jobs
         const { data: job, error } = await supabase
           .from('bookings')
           .select(`
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
             ratings(*)
           `)
           .eq('id', jobId)
-          .eq('partner_id', user.id)
+          .or(`partner_id.eq.${user.id},and(status.eq.pending,partner_id.is.null)`)
           .single();
 
         if (error || !job) {
@@ -192,11 +192,13 @@ Deno.serve(async (req) => {
         }
 
         if (fromDate) {
-          query = query.gte('scheduled_date', fromDate);
+          // Use date comparison to include the entire day
+          query = query.gte('scheduled_date', `${fromDate}T00:00:00Z`);
         }
 
         if (toDate) {
-          query = query.lte('scheduled_date', toDate);
+          // Use end of day to include all bookings on that date
+          query = query.lte('scheduled_date', `${toDate}T23:59:59Z`);
         }
 
         // Apply pagination and ordering

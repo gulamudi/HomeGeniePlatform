@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
 
 class CancelJobScreen extends StatefulWidget {
   final String jobId;
@@ -239,8 +240,8 @@ class _CancelJobScreenState extends State<CancelJobScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Cancel the job and navigate back
-              context.go('/');
+              // Cancel the job and navigate back to home
+              context.go(AppConstants.routeHome);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorRed,
