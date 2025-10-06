@@ -12,6 +12,7 @@ class AppConstants {
   static const String routeJobCompleted = '/job-completed';
   static const String routeCancelJob = '/cancel-job';
   static const String routeProfile = '/profile';
+  static const String routeJobHistory = '/job-history';
   static const String routeSupport = '/support';
   static const String routePaymentGuide = '/payment-guide';
 
@@ -50,6 +51,7 @@ class AppConstants {
   static const String tabToday = 'today';
   static const String tabUpcoming = 'upcoming';
   static const String tabHistory = 'history';
+  static const String tabAvailable = 'available';
 
   // Cancel Reasons
   static const List<String> cancelReasons = [

@@ -99,9 +99,7 @@ class ProfileScreen extends ConsumerWidget {
               context,
               Icons.history,
               'Job History',
-              () {
-                // Navigate to job history
-              },
+              () => context.push(AppConstants.routeJobHistory),
             ),
 
             const SizedBox(height: 16),

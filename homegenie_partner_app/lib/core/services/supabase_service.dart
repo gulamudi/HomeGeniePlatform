@@ -119,6 +119,30 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
+  /// Get single job by ID
+  Future<Map<String, dynamic>> getJobById(String jobId) async {
+    try {
+      print('🔵 [SupabaseService] Fetching job by ID: $jobId');
+
+      final response = await client
+          .from('bookings')
+          .select('''
+            *,
+            services(*),
+            users!bookings_customer_id_fkey(*)
+          ''')
+          .eq('id', jobId)
+          .single();
+
+      print('✅ [SupabaseService] Job fetched successfully');
+      return response;
+    } catch (e, stackTrace) {
+      print('❌ [SupabaseService] Error fetching job: $e');
+      print('   Stack trace: $stackTrace');
+      throw Exception('Failed to fetch job: $e');
+    }
+  }
+
   /// Accept job using database function (bypasses RLS)
   Future<void> acceptJob({
     required String bookingId,
@@ -156,12 +180,49 @@ class SupabaseService {
     }
   }
 
-  /// Reject job
+  /// Reject job using database function
   Future<void> rejectJob({
     required String bookingId,
+    String? reason,
   }) async {
-    // Just leave it for other partners
-    // No action needed
+    try {
+      print('🔵 [SupabaseService] Rejecting job...');
+      print('   Booking ID: $bookingId');
+      print('   Reason: $reason');
+      print('   Partner ID: $currentUserId');
+
+      // Try calling the database function if it exists
+      try {
+        final response = await client.rpc(
+          'reject_job',
+          params: {
+            'p_booking_id': bookingId,
+            'p_partner_id': currentUserId,
+            'p_reason': reason ?? 'Partner declined',
+          },
+        );
+
+        print('✅ [SupabaseService] RPC Function response: $response');
+
+        // Check if the function returned an error
+        if (response is Map && response['success'] == false) {
+          throw Exception(response['error'] ?? 'Unknown error from reject_job function');
+        }
+
+        print('✅ [SupabaseService] Job rejected successfully via RPC!');
+      } catch (rpcError) {
+        // If RPC function doesn't exist, just log the rejection
+        // The job remains available for other partners
+        print('⚠️ [SupabaseService] RPC reject_job not available, logging rejection only');
+        print('   RPC Error: $rpcError');
+        print('✅ [SupabaseService] Job rejection recorded (no-op)');
+      }
+    } catch (e, stackTrace) {
+      print('❌ [SupabaseService] Error rejecting job: $e');
+      print('   Error type: ${e.runtimeType}');
+      print('   Stack trace: $stackTrace');
+      throw Exception('Failed to reject job: $e');
+    }
   }
 
   /// Update booking status

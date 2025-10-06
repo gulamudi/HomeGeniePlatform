@@ -1,30 +1,42 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import '../../../core/models/job.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../../core/services/supabase_service.dart';
 
 final jobDetailsProvider = FutureProvider.family<Job, String>((ref, jobId) async {
-  final apiClient = ref.watch(apiClientProvider);
+  final supabase = SupabaseService.instance;
 
   try {
-    final response = await apiClient.getJobDetails(jobId);
-    final data = response.data;
-
-    if (data == null || data['data'] == null) {
-      throw Exception('Job not found');
-    }
-
-    final booking = data['data'] as Map<String, dynamic>;
+    print('🔵 [JobDetailsProvider] Fetching job details for: $jobId');
+    final booking = await supabase.getJobById(jobId);
+    print('✅ [JobDetailsProvider] Job details fetched successfully');
     return _mapBookingToJob(booking);
-  } on DioException catch (e) {
-    print('Error fetching job details: ${e.message}');
-    throw Exception('Failed to fetch job details');
+  } catch (e, stackTrace) {
+    print('❌ [JobDetailsProvider] Error fetching job details: $e');
+    print('   Stack trace: $stackTrace');
+    throw Exception('Failed to fetch job details: $e');
   }
 });
 
 Job _mapBookingToJob(Map<String, dynamic> booking) {
-  final service = booking['service'] as Map<String, dynamic>?;
-  final customer = booking['customer'] as Map<String, dynamic>?;
+  // Supabase returns 'services' (plural) and 'users' from FK relation
+  final service = booking['services'] as Map<String, dynamic>?;
+  final customer = booking['users'] as Map<String, dynamic>?;
+
+  // Handle address - it can be either a String or a Map
+  String addressString = '';
+  final addressData = booking['address'];
+  if (addressData is String) {
+    addressString = addressData;
+  } else if (addressData is Map<String, dynamic>) {
+    // Construct address string from map
+    final parts = <String>[];
+    if (addressData['street'] != null) parts.add(addressData['street'].toString());
+    if (addressData['area'] != null) parts.add(addressData['area'].toString());
+    if (addressData['city'] != null) parts.add(addressData['city'].toString());
+    if (addressData['state'] != null) parts.add(addressData['state'].toString());
+    if (addressData['pincode'] != null) parts.add(addressData['pincode'].toString());
+    addressString = parts.join(', ');
+  }
 
   return Job(
     id: booking['id'] as String,
@@ -42,7 +54,7 @@ Job _mapBookingToJob(Map<String, dynamic> booking) {
     customerName: customer?['full_name'] as String? ?? 'Customer',
     customerPhone: customer?['phone'] as String?,
     customerPhoto: customer?['avatar_url'] as String?,
-    address: booking['address'] as String? ?? '',
+    address: addressString.isNotEmpty ? addressString : 'Address not provided',
     latitude: booking['latitude'] as double?,
     longitude: booking['longitude'] as double?,
     instructions: booking['instructions'] as String?,

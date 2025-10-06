@@ -95,6 +95,13 @@ class ApiClient {
   }
 
   // Job endpoints
+  Future<Response> getAvailableJobs({int page = 1, int limit = 20}) {
+    return _dio.get('/functions/v1/partner-jobs/available', queryParameters: {
+      'page': page.toString(),
+      'limit': limit.toString(),
+    });
+  }
+
   Future<Response> getAssignedJobs({String? status, String? fromDate, String? toDate, int page = 1, int limit = 20}) {
     return _dio.get('/functions/v1/partner-jobs/assigned', queryParameters: {
       if (status != null) 'status': status,
@@ -110,25 +117,25 @@ class ApiClient {
   }
 
   Future<Response> acceptJob(String jobId) {
-    return _dio.post('/partners/jobs/$jobId/accept');
+    return _dio.post('/functions/v1/partner-jobs/$jobId/accept');
   }
 
   Future<Response> rejectJob(String jobId, String reason) {
-    return _dio.post('/partners/jobs/$jobId/reject', data: {
+    return _dio.post('/functions/v1/partner-jobs/$jobId/reject', data: {
       'reason': reason,
     });
   }
 
   Future<Response> startJob(String jobId) {
-    return _dio.post('/partners/jobs/$jobId/start');
+    return _dio.post('/functions/v1/partner-jobs/$jobId/start');
   }
 
   Future<Response> completeJob(String jobId) {
-    return _dio.post('/partners/jobs/$jobId/complete');
+    return _dio.post('/functions/v1/partner-jobs/$jobId/complete');
   }
 
   Future<Response> cancelJob(String jobId, String reason) {
-    return _dio.post('/partners/jobs/$jobId/cancel', data: {
+    return _dio.post('/functions/v1/partner-jobs/$jobId/cancel', data: {
       'reason': reason,
     });
   }

@@ -12,6 +12,7 @@ import '../../features/jobs/screens/job_completed_screen.dart';
 import '../../features/jobs/screens/cancel_job_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/support_screen.dart';
+import '../../features/jobs/screens/job_history_screen.dart';
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
 
@@ -123,6 +124,10 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeProfile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeJobHistory,
+        builder: (context, state) => const JobHistoryScreen(),
       ),
       GoRoute(
         path: AppConstants.routeSupport,

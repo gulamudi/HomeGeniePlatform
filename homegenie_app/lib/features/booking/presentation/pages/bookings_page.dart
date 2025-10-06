@@ -33,15 +33,41 @@ class _BookingsPageState extends ConsumerState<BookingsPage> with SingleTickerPr
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('My Bookings'),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppTheme.primaryBlue,
-          labelColor: AppTheme.primaryBlue,
-          unselectedLabelColor: AppTheme.textSecondary,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'History'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Upcoming'),
+                  Tab(text: 'History'),
+                ],
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textSecondary,
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                indicator: BoxDecoration(
+                  color: AppTheme.primaryBlue,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                splashBorderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
         ),
       ),
       body: TabBarView(
@@ -63,27 +89,39 @@ class _UpcomingBookingsTab extends ConsumerWidget {
     final upcomingBookings = ref.watch(upcomingBookingsProvider);
 
     if (upcomingBookings.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(upcomingBookingsProvider);
+        },
+        child: ListView(
           children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 80,
-              color: AppTheme.textSecondary.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No upcoming bookings',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Book a service to see it here',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textSecondary,
+            SizedBox(
+              height: MediaQuery.of(context).size.height - 200,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 80,
+                      color: AppTheme.textSecondary.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No upcoming bookings',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Book a service to see it here',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -91,13 +129,18 @@ class _UpcomingBookingsTab extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppTheme.paddingMedium),
-      itemCount: upcomingBookings.length,
-      itemBuilder: (context, index) {
-        final booking = upcomingBookings[index];
-        return _BookingCard(booking: booking);
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(upcomingBookingsProvider);
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(AppTheme.paddingMedium),
+        itemCount: upcomingBookings.length,
+        itemBuilder: (context, index) {
+          final booking = upcomingBookings[index];
+          return _BookingCard(booking: booking);
+        },
+      ),
     );
   }
 }
@@ -110,20 +153,32 @@ class _PastBookingsTab extends ConsumerWidget {
     final pastBookings = ref.watch(pastBookingsProvider);
 
     if (pastBookings.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(pastBookingsProvider);
+        },
+        child: ListView(
           children: [
-            Icon(
-              Icons.history_outlined,
-              size: 80,
-              color: AppTheme.textSecondary.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No past bookings',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.textSecondary,
+            SizedBox(
+              height: MediaQuery.of(context).size.height - 200,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.history_outlined,
+                      size: 80,
+                      color: AppTheme.textSecondary.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No past bookings',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -131,13 +186,18 @@ class _PastBookingsTab extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppTheme.paddingMedium),
-      itemCount: pastBookings.length,
-      itemBuilder: (context, index) {
-        final booking = pastBookings[index];
-        return _BookingCard(booking: booking);
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(pastBookingsProvider);
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(AppTheme.paddingMedium),
+        itemCount: pastBookings.length,
+        itemBuilder: (context, index) {
+          final booking = pastBookings[index];
+          return _BookingCard(booking: booking);
+        },
+      ),
     );
   }
 }

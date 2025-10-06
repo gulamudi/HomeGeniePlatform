@@ -10,6 +10,13 @@ final jobsProvider = FutureProvider.family<List<Job>, String>((ref, tab) async {
   // Determine date filters and status based on tab
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
+  final tomorrow = today.add(const Duration(days: 1));
+  final yesterday = today.subtract(const Duration(days: 1));
+
+  // Helper to format date as YYYY-MM-DD for API
+  String formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
 
   String? status;
   String? fromDate;
@@ -17,47 +24,78 @@ final jobsProvider = FutureProvider.family<List<Job>, String>((ref, tab) async {
 
   switch (tab) {
     case AppConstants.tabToday:
-      fromDate = today.toIso8601String();
-      toDate = today.add(const Duration(days: 1)).toIso8601String();
+      fromDate = formatDate(today);
+      toDate = formatDate(today);
       status = 'confirmed,in_progress';
       break;
     case AppConstants.tabUpcoming:
-      fromDate = today.add(const Duration(days: 1)).toIso8601String();
+      fromDate = formatDate(tomorrow);
       status = 'confirmed';
       break;
     case AppConstants.tabHistory:
-      toDate = today.toIso8601String();
+      toDate = formatDate(yesterday);
       status = 'completed,cancelled';
+      break;
+    case AppConstants.tabAvailable:
+      status = 'pending';
       break;
   }
 
   try {
-    final response = await apiClient.getAssignedJobs(
-      status: status,
-      fromDate: fromDate,
-      toDate: toDate,
-    );
+    print('🔍 Fetching $tab jobs - Status: $status, FromDate: $fromDate, ToDate: $toDate');
+
+    final Response response;
+    if (tab == AppConstants.tabAvailable) {
+      response = await apiClient.getAvailableJobs();
+    } else {
+      response = await apiClient.getAssignedJobs(
+        status: status,
+        fromDate: fromDate,
+        toDate: toDate,
+      );
+    }
+
+    print('📦 Response data: ${response.data}');
 
     final data = response.data;
     if (data == null || data['data'] == null) {
+      print('⚠️ No data in response');
       return [];
     }
 
     final jobsData = data['data']['jobs'] as List;
+    print('✅ Found ${jobsData.length} jobs for $tab');
     return jobsData.map((jobJson) => _mapBookingToJob(jobJson)).toList();
   } on DioException catch (e) {
-    print('Error fetching jobs: ${e.message}');
-    // Return empty list instead of throwing to show empty state
-    return [];
-  } catch (e) {
-    print('Unexpected error fetching jobs: $e');
-    return [];
+    print('❌ DioException fetching $tab jobs: ${e.message}');
+    print('Response: ${e.response?.data}');
+    throw Exception('Failed to fetch jobs: ${e.message}');
+  } catch (e, stackTrace) {
+    print('❌ Unexpected error fetching $tab jobs: $e');
+    print('Stack trace: $stackTrace');
+    throw Exception('Failed to fetch jobs: $e');
   }
 });
 
 Job _mapBookingToJob(Map<String, dynamic> booking) {
   final service = booking['service'] as Map<String, dynamic>?;
   final customer = booking['customer'] as Map<String, dynamic>?;
+
+  // Handle address - it can be either a String or a Map
+  String addressString = '';
+  final addressData = booking['address'];
+  if (addressData is String) {
+    addressString = addressData;
+  } else if (addressData is Map<String, dynamic>) {
+    // Construct address string from map
+    final parts = <String>[];
+    if (addressData['street'] != null) parts.add(addressData['street'].toString());
+    if (addressData['area'] != null) parts.add(addressData['area'].toString());
+    if (addressData['city'] != null) parts.add(addressData['city'].toString());
+    if (addressData['state'] != null) parts.add(addressData['state'].toString());
+    if (addressData['pincode'] != null) parts.add(addressData['pincode'].toString());
+    addressString = parts.join(', ');
+  }
 
   return Job(
     id: booking['id'] as String,
@@ -75,7 +113,7 @@ Job _mapBookingToJob(Map<String, dynamic> booking) {
     customerName: customer?['full_name'] as String? ?? 'Customer',
     customerPhone: customer?['phone'] as String?,
     customerPhoto: customer?['avatar_url'] as String?,
-    address: booking['address'] as String? ?? '',
+    address: addressString.isNotEmpty ? addressString : 'Address not provided',
     latitude: booking['latitude'] as double?,
     longitude: booking['longitude'] as double?,
     instructions: booking['instructions'] as String?,

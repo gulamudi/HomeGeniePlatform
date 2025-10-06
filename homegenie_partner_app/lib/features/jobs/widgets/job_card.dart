@@ -7,11 +7,15 @@ import '../../../core/constants/app_constants.dart';
 class JobCard extends StatelessWidget {
   final Job job;
   final VoidCallback onTap;
+  final VoidCallback? onAccept;
+  final VoidCallback? onReject;
 
   const JobCard({
     super.key,
     required this.job,
     required this.onTap,
+    this.onAccept,
+    this.onReject,
   });
 
   @override
@@ -133,7 +137,31 @@ class JobCard extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),
-                  if (job.status == AppConstants.jobStatusPending)
+                  if (job.status == AppConstants.jobStatusPending && onAccept != null && onReject != null) ...[
+                    OutlinedButton(
+                      onPressed: onReject,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        foregroundColor: AppTheme.errorRed,
+                        side: const BorderSide(color: AppTheme.errorRed),
+                      ),
+                      child: const Text('Reject'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: onAccept,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                      child: const Text('Accept'),
+                    ),
+                  ] else if (job.status == AppConstants.jobStatusPending)
                     OutlinedButton(
                       onPressed: onTap,
                       style: OutlinedButton.styleFrom(
@@ -143,8 +171,8 @@ class JobCard extends StatelessWidget {
                         ),
                       ),
                       child: const Text('View Details'),
-                    ),
-                  if (job.status == AppConstants.jobStatusAccepted)
+                    )
+                  else if (job.status == AppConstants.jobStatusAccepted)
                     ElevatedButton(
                       onPressed: onTap,
                       style: ElevatedButton.styleFrom(
