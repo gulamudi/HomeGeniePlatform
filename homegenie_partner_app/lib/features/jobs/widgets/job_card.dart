@@ -143,6 +143,8 @@ class JobCard extends StatelessWidget {
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -184,7 +186,7 @@ class JobCard extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                job.scheduledTime ?? 'Not set',
+                _getFormattedTime(),
                 style: const TextStyle(fontSize: 14),
               ),
             ),
@@ -260,21 +262,13 @@ class JobCard extends StatelessWidget {
                 ),
                 child: const Text('Accept'),
               ),
-            ] else if (job.status == AppConstants.jobStatusPending)
+            ] else
               OutlinedButton(
                 onPressed: onTap,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 ),
                 child: const Text('View Details'),
-              )
-            else if (job.status == AppConstants.jobStatusAccepted && job.isToday)
-              ElevatedButton(
-                onPressed: onTap,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                ),
-                child: const Text('Start Job'),
               ),
           ],
         ),
@@ -329,11 +323,59 @@ class JobCard extends StatelessWidget {
     }
   }
 
+  String _getFormattedTime() {
+    print('🔍 DEBUG _getFormattedTime - scheduledTime: ${job.scheduledTime}');
+
+    if (job.scheduledTime == null) {
+      print('⚠️ DEBUG - scheduledTime is null for job ${job.id}');
+      return 'Time not set';
+    }
+
+    try {
+      // Parse time string (format: "HH:mm:ss" or "HH:mm")
+      final timeParts = job.scheduledTime!.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      // Convert to 12-hour format with AM/PM
+      final period = hour >= 12 ? 'PM' : 'AM';
+      final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+      final displayMinute = minute.toString().padLeft(2, '0');
+
+      print('✅ DEBUG - Formatted time: $displayHour:$displayMinute $period');
+      return '$displayHour:$displayMinute $period';
+    } catch (e) {
+      print('❌ DEBUG - Error parsing time: $e');
+      // If parsing fails, return the original string
+      return job.scheduledTime ?? 'Time not set';
+    }
+  }
+
   String _getStartsInText() {
     if (job.scheduledTime == null) return 'Time not set';
 
     final now = DateTime.now();
-    final scheduledDateTime = job.scheduledDate;
+
+    // Parse scheduledTime and combine with scheduledDate
+    DateTime scheduledDateTime;
+    try {
+      // Parse time string (format: "HH:mm:ss" or "HH:mm")
+      final timeParts = job.scheduledTime!.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      // Combine date and time
+      scheduledDateTime = DateTime(
+        job.scheduledDate.year,
+        job.scheduledDate.month,
+        job.scheduledDate.day,
+        hour,
+        minute,
+      );
+    } catch (e) {
+      // If parsing fails, return 'Time not set'
+      return 'Time not set';
+    }
 
     if (scheduledDateTime.isBefore(now)) {
       return 'Started';
@@ -343,7 +385,13 @@ class JobCard extends StatelessWidget {
     final hours = difference.inHours;
     final minutes = difference.inMinutes % 60;
 
-    return 'Starts in: ${hours.toString().padLeft(2, '0')}h ${minutes.toString().padLeft(2, '0')}m';
+    if (hours == 0) {
+      return '$minutes min from now';
+    } else if (minutes == 0) {
+      return '$hours hours from now';
+    } else {
+      return '$hours hours $minutes min from now';
+    }
   }
 
   Widget _buildStatusBadge(String status) {
@@ -356,6 +404,7 @@ class JobCard extends StatelessWidget {
         label = 'New';
         break;
       case AppConstants.jobStatusAccepted:
+      case AppConstants.jobStatusConfirmed:  // Backend uses 'confirmed' for accepted jobs
         color = AppTheme.statusConfirmed;
         label = 'Accepted';
         break;

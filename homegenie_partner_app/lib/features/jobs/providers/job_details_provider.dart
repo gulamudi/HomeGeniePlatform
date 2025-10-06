@@ -36,15 +36,41 @@ Job _mapBookingToJob(Map<String, dynamic> booking) {
   if (addressData is String) {
     addressString = addressData;
   } else if (addressData is Map<String, dynamic>) {
-    // Construct address string from map
+    // Construct address string from map - include all local details except city and state
     final parts = <String>[];
-    if (addressData['street'] != null) parts.add(addressData['street'].toString());
-    if (addressData['area'] != null) parts.add(addressData['area'].toString());
-    if (addressData['city'] != null) parts.add(addressData['city'].toString());
-    if (addressData['state'] != null) parts.add(addressData['state'].toString());
-    if (addressData['pincode'] != null) parts.add(addressData['pincode'].toString());
+    if (addressData['flat'] != null && addressData['flat'].toString().isNotEmpty) {
+      parts.add(addressData['flat'].toString());
+    }
+    if (addressData['building'] != null && addressData['building'].toString().isNotEmpty) {
+      parts.add(addressData['building'].toString());
+    }
+    if (addressData['street'] != null && addressData['street'].toString().isNotEmpty) {
+      parts.add(addressData['street'].toString());
+    }
+    if (addressData['area'] != null && addressData['area'].toString().isNotEmpty) {
+      parts.add(addressData['area'].toString());
+    }
+    if (addressData['sector'] != null && addressData['sector'].toString().isNotEmpty) {
+      parts.add(addressData['sector'].toString());
+    }
+    if (addressData['landmark'] != null && addressData['landmark'].toString().isNotEmpty) {
+      parts.add(addressData['landmark'].toString());
+    }
+    if (addressData['locality'] != null && addressData['locality'].toString().isNotEmpty) {
+      parts.add(addressData['locality'].toString());
+    }
+    // Only add city if no local info is available
+    if (parts.isEmpty && addressData['city'] != null) {
+      parts.add(addressData['city'].toString());
+    }
     addressString = parts.join(', ');
   }
+
+  // Parse scheduled_date as a full timestamp (includes date and time)
+  final scheduledDateTime = DateTime.parse(booking['scheduled_date'] as String);
+
+  // Extract time in HH:mm:ss format from the timestamp
+  final scheduledTimeString = '${scheduledDateTime.hour.toString().padLeft(2, '0')}:${scheduledDateTime.minute.toString().padLeft(2, '0')}:${scheduledDateTime.second.toString().padLeft(2, '0')}';
 
   return Job(
     id: booking['id'] as String,
@@ -52,8 +78,8 @@ Job _mapBookingToJob(Map<String, dynamic> booking) {
     serviceType: service?['category'] as String? ?? 'service',
     serviceName: service?['name'] as String? ?? 'Service',
     status: booking['status'] as String,
-    scheduledDate: DateTime.parse(booking['scheduled_date'] as String),
-    scheduledTime: booking['scheduled_time'] as String?,
+    scheduledDate: scheduledDateTime,
+    scheduledTime: scheduledTimeString,
     amount: (booking['total_amount'] as num).toDouble(),
     partnerEarning: booking['partner_amount'] != null
         ? (booking['partner_amount'] as num).toDouble()

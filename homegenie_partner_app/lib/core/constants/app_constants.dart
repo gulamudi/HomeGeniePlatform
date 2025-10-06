@@ -19,6 +19,7 @@ class AppConstants {
   // Job Status
   static const String jobStatusPending = 'pending';
   static const String jobStatusAccepted = 'accepted';
+  static const String jobStatusConfirmed = 'confirmed';  // Backend uses 'confirmed' for accepted jobs
   static const String jobStatusInProgress = 'in_progress';
   static const String jobStatusCompleted = 'completed';
   static const String jobStatusCancelled = 'cancelled';

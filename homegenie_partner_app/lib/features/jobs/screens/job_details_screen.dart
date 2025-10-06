@@ -246,7 +246,7 @@ class JobDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    '${DateFormat('MMMM dd, yyyy').format(job.scheduledDate)}, ${job.scheduledTime ?? 'Time not set'}',
+                    '${DateFormat('MMMM dd, yyyy').format(job.scheduledDate)}, ${_getFormattedTime(job)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 15,
@@ -374,6 +374,12 @@ class JobDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildBottomActions(BuildContext context, WidgetRef ref, Job job) {
+    print('🔍 DEBUG _buildBottomActions:');
+    print('  Job ID: ${job.id}');
+    print('  Status: ${job.status}');
+    print('  Is Today: ${job.isToday}');
+    print('  Expected statuses - Pending: ${AppConstants.jobStatusPending}, Accepted: ${AppConstants.jobStatusAccepted}');
+
     // For pending (available) jobs, show accept/reject buttons
     if (job.status == AppConstants.jobStatusPending) {
       return Container(
@@ -440,8 +446,8 @@ class JobDetailsScreen extends ConsumerWidget {
       );
     }
 
-    // For accepted jobs, only show Start Job button if it's today
-    if (job.status == AppConstants.jobStatusAccepted) {
+    // For accepted/confirmed jobs, show Start Job (if today) and Cancel Job buttons
+    if (job.status == AppConstants.jobStatusAccepted || job.status == AppConstants.jobStatusConfirmed) {
       return Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -603,6 +609,27 @@ class JobDetailsScreen extends ConsumerWidget {
     final uri = Uri.parse('sms:$phone');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
+    }
+  }
+
+  String _getFormattedTime(Job job) {
+    if (job.scheduledTime == null) return 'Time not set';
+
+    try {
+      // Parse time string (format: "HH:mm:ss" or "HH:mm")
+      final timeParts = job.scheduledTime!.split(':');
+      final hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+
+      // Convert to 12-hour format with AM/PM
+      final period = hour >= 12 ? 'PM' : 'AM';
+      final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+      final displayMinute = minute.toString().padLeft(2, '0');
+
+      return '$displayHour:$displayMinute $period';
+    } catch (e) {
+      // If parsing fails, return the original string
+      return job.scheduledTime ?? 'Time not set';
     }
   }
 }
