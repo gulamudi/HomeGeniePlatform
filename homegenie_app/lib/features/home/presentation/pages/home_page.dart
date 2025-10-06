@@ -231,30 +231,37 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
             ),
 
           // Tabs
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppTheme.borderColor, width: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundColor,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: AppTheme.primaryBlue,
-              indicatorWeight: 2,
-              labelColor: AppTheme.primaryBlue,
-              unselectedLabelColor: AppTheme.textSecondary,
-              labelStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Upcoming'),
+                  Tab(text: 'History'),
+                ],
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textSecondary,
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                indicator: BoxDecoration(
+                  color: AppTheme.primaryBlue,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                splashBorderRadius: BorderRadius.circular(10),
               ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-              tabs: const [
-                Tab(text: 'Upcoming Bookings'),
-                Tab(text: 'Booking History'),
-              ],
             ),
           ),
 

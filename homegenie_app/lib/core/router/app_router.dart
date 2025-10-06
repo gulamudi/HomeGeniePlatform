@@ -13,7 +13,6 @@ import '../../features/booking/presentation/pages/select_address_page.dart';
 import '../../features/booking/presentation/pages/payment_method_page.dart';
 import '../../features/booking/presentation/pages/booking_checkout_page.dart';
 import '../../features/booking/presentation/pages/booking_confirmation_page.dart';
-import '../../features/booking/presentation/pages/bookings_page.dart';
 import '../../features/booking/presentation/pages/booking_details_page.dart';
 import '../../features/booking/presentation/pages/reschedule_booking_page.dart';
 import '../../features/booking/presentation/pages/cancel_booking_page.dart';
