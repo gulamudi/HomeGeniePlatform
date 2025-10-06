@@ -87,13 +87,16 @@ Job _mapBookingToJob(Map<String, dynamic> booking) {
   if (addressData is String) {
     addressString = addressData;
   } else if (addressData is Map<String, dynamic>) {
-    // Construct address string from map
+    // Construct address string from map - prioritize local info (flat, building, area)
     final parts = <String>[];
+    if (addressData['flat'] != null) parts.add(addressData['flat'].toString());
+    if (addressData['building'] != null) parts.add(addressData['building'].toString());
     if (addressData['street'] != null) parts.add(addressData['street'].toString());
     if (addressData['area'] != null) parts.add(addressData['area'].toString());
-    if (addressData['city'] != null) parts.add(addressData['city'].toString());
-    if (addressData['state'] != null) parts.add(addressData['state'].toString());
-    if (addressData['pincode'] != null) parts.add(addressData['pincode'].toString());
+    // Only add city if no local info is available
+    if (parts.isEmpty && addressData['city'] != null) {
+      parts.add(addressData['city'].toString());
+    }
     addressString = parts.join(', ');
   }
 

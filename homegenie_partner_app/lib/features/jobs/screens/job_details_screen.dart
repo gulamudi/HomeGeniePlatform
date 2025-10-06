@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/models/job.dart';
 import '../../../core/constants/app_constants.dart';
 import '../providers/job_details_provider.dart';
+import '../providers/job_actions_provider.dart';
+import '../../home/providers/jobs_provider.dart';
 
 class JobDetailsScreen extends ConsumerWidget {
   final String jobId;
@@ -58,7 +60,7 @@ class JobDetailsScreen extends ConsumerWidget {
         ),
       ),
       bottomNavigationBar: jobAsync.when(
-        data: (job) => _buildBottomActions(context, job),
+        data: (job) => _buildBottomActions(context, ref, job),
         loading: () => const SizedBox.shrink(),
         error: (_, __) => const SizedBox.shrink(),
       ),
@@ -371,66 +373,223 @@ class JobDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomActions(BuildContext context, Job job) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.black12),
+  Widget _buildBottomActions(BuildContext context, WidgetRef ref, Job job) {
+    // For pending (available) jobs, show accept/reject buttons
+    if (job.status == AppConstants.jobStatusPending) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.black12),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: SafeArea(
-        child: Column(
+        padding: const EdgeInsets.all(16),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: () => _handleRejectJob(context, ref, job.id),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.errorRed,
+                      side: const BorderSide(color: AppTheme.errorRed, width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Reject',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => _handleAcceptJob(context, ref, job.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 8,
+                      shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Accept',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // For accepted jobs, only show Start Job button if it's today
+    if (job.status == AppConstants.jobStatusAccepted) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.black12),
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Only show Start Job button for today's jobs
+              if (job.isToday) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.push('${AppConstants.routeJobStarted}?jobId=${job.id}&serviceName=${Uri.encodeComponent(job.serviceName)}&customerName=${Uri.encodeComponent(job.customerName)}');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 8,
+                      shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Start Job',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: TextButton(
+                  onPressed: () {
+                    context.push('${AppConstants.routeCancelJob}?jobId=$jobId');
+                  },
+                  child: const Text(
+                    'Cancel Job',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.errorRed,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // For other statuses (in_progress, completed, cancelled), show no actions
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _handleAcceptJob(BuildContext context, WidgetRef ref, String jobId) async {
+    final jobActions = ref.read(jobActionsProvider);
+    try {
+      await jobActions.acceptJob(jobId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Job accepted successfully!'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+        // Refresh the job lists
+        ref.invalidate(jobsProvider(AppConstants.tabAvailable));
+        ref.invalidate(jobsProvider(AppConstants.tabToday));
+        ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
+        ref.invalidate(jobDetailsProvider(jobId));
+        // Go back to home
+        context.pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to accept job: $e'),
+            backgroundColor: AppTheme.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleRejectJob(BuildContext context, WidgetRef ref, String jobId) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reject Job'),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  context.push('${AppConstants.routeJobStarted}?jobId=${job.id}&serviceName=${Uri.encodeComponent(job.serviceName)}&customerName=${Uri.encodeComponent(job.customerName)}');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  'Start Job',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: TextButton(
-                onPressed: () {
-                  context.push('${AppConstants.routeCancelJob}?jobId=$jobId');
-                },
-                child: const Text(
-                  'Cancel Job',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.errorRed,
-                  ),
-                ),
-              ),
-            ),
+            const Text('Why are you rejecting this job?'),
+            const SizedBox(height: 16),
+            ...AppConstants.cancelReasons.map((reason) {
+              return ListTile(
+                title: Text(reason),
+                onTap: () => Navigator.pop(context, reason),
+              );
+            }).toList(),
           ],
         ),
       ),
     );
+
+    if (result != null && context.mounted) {
+      final jobActions = ref.read(jobActionsProvider);
+      try {
+        await jobActions.rejectJob(jobId, result);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Job rejected'),
+              backgroundColor: AppTheme.textSecondary,
+            ),
+          );
+          // Refresh the available jobs list
+          ref.invalidate(jobsProvider(AppConstants.tabAvailable));
+          ref.invalidate(jobDetailsProvider(jobId));
+          // Go back to home
+          context.pop();
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to reject job: $e'),
+              backgroundColor: AppTheme.errorRed,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Future<void> _makeCall(String phone) async {

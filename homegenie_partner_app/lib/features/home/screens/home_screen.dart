@@ -159,6 +159,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 onReject: tab == AppConstants.tabAvailable
                     ? () => _handleRejectJob(job.id)
                     : null,
+                isHighlighted: tab == AppConstants.tabToday && index == 0,
+                showDate: tab == AppConstants.tabUpcoming || tab == AppConstants.tabAvailable,
               );
             },
           ),
