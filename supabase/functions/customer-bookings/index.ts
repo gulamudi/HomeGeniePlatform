@@ -228,6 +228,21 @@ Deno.serve(async (req) => {
             updated_by_type: 'customer',
           });
 
+        // Trigger partner assignment (async - don't wait)
+        try {
+          const assignUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/assign-booking-to-partner`;
+          fetch(assignUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({ bookingId: booking.id }),
+          }).catch(err => console.error('Failed to trigger partner assignment:', err));
+        } catch (err) {
+          console.error('Error triggering partner assignment:', err);
+        }
+
         return createResponse(
           responseBooking,
           HTTP_STATUS.CREATED,

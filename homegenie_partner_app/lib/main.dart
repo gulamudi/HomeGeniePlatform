@@ -6,6 +6,7 @@ import 'core/storage/storage_service.dart';
 import 'core/router/app_router.dart';
 import 'core/services/supabase_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/widgets/job_notification_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,11 +49,13 @@ class HomeGeniePartnerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final router = AppRouter(storage);
 
-    return MaterialApp.router(
-      title: AppConfig.partnerAppName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme(context),
-      routerConfig: router.router,
+    return JobNotificationListener(
+      child: MaterialApp.router(
+        title: AppConfig.partnerAppName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme(context),
+        routerConfig: router.router,
+      ),
     );
   }
 }

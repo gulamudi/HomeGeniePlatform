@@ -20,7 +20,11 @@ class AppRouter {
 
   AppRouter(this._storage);
 
+  // Global navigator key for navigation from anywhere
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   late final GoRouter router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: AppConstants.routeLogin,
     redirect: (context, state) {
       final isLoggedIn = _storage.isLoggedIn();

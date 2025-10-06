@@ -119,26 +119,41 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  /// Accept job
+  /// Accept job using database function (bypasses RLS)
   Future<void> acceptJob({
     required String bookingId,
     required String partnerId,
   }) async {
-    await client
-        .from('bookings')
-        .update({
-          'partner_id': partnerId,
-          'status': 'confirmed',
-        })
-        .eq('id', bookingId);
+    try {
+      print('🔵 [SupabaseService] Accepting job...');
+      print('   Booking ID: $bookingId');
+      print('   Partner ID: $partnerId');
+      print('   Auth UID: ${client.auth.currentUser?.id}');
 
-    // Add timeline entry
-    await client.from('booking_timeline').insert({
-      'booking_id': bookingId,
-      'status': 'confirmed',
-      'updated_by': partnerId,
-      'updated_by_type': 'partner',
-    });
+      // Call the database function that handles both booking update and timeline entry
+      print('🔵 [SupabaseService] Calling accept_job function...');
+      final response = await client.rpc(
+        'accept_job',
+        params: {
+          'p_booking_id': bookingId,
+          'p_partner_id': partnerId,
+        },
+      );
+
+      print('✅ [SupabaseService] Function response: $response');
+
+      // Check if the function returned an error
+      if (response is Map && response['success'] == false) {
+        throw Exception(response['error'] ?? 'Unknown error from accept_job function');
+      }
+
+      print('✅ [SupabaseService] Job accepted successfully!');
+    } catch (e, stackTrace) {
+      print('❌ [SupabaseService] Error accepting job: $e');
+      print('   Error type: ${e.runtimeType}');
+      print('   Stack trace: $stackTrace');
+      throw Exception('Failed to accept job: $e');
+    }
   }
 
   /// Reject job
@@ -193,6 +208,61 @@ class SupabaseService {
         .order('completed_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(response);
+  }
+
+  /// Subscribe to notifications for partner (for job offers)
+  RealtimeChannel subscribeToNotifications({
+    required String partnerId,
+    required Function(Map<String, dynamic>) onNotification,
+  }) {
+    print('========================================');
+    print('📡 [SupabaseService] SETTING UP REALTIME SUBSCRIPTION');
+    print('   Partner ID: $partnerId');
+    print('   Channel: partner_notifications_$partnerId');
+    print('========================================');
+
+    final channel = client
+        .channel('partner_notifications_$partnerId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: partnerId,
+          ),
+          callback: (payload) {
+            print('========================================');
+            print('🔔 [SupabaseService] REALTIME NOTIFICATION RECEIVED!');
+            print('   Payload: ${payload.newRecord}');
+            print('========================================');
+            onNotification(payload.newRecord);
+          },
+        )
+        .subscribe((status, [error]) {
+          print('========================================');
+          print('📡 [SupabaseService] SUBSCRIPTION STATUS CHANGED');
+          print('   Status: $status');
+          if (error != null) {
+            print('   ❌ Error: $error');
+          }
+          print('========================================');
+
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            print('✅✅✅ SUCCESSFULLY SUBSCRIBED TO NOTIFICATIONS ✅✅✅');
+            print('   Partner: $partnerId');
+            print('   Listening for notifications...');
+          } else if (status == RealtimeSubscribeStatus.channelError) {
+            print('❌ [SupabaseService] Channel error - check if Realtime is enabled in Supabase');
+          } else if (status == RealtimeSubscribeStatus.timedOut) {
+            print('⏱️ [SupabaseService] Subscription timed out');
+          } else if (status == RealtimeSubscribeStatus.closed) {
+            print('🚪 [SupabaseService] Channel closed');
+          }
+        });
+
+    return channel;
   }
 
   /// Subscribe to new bookings (for job alerts)

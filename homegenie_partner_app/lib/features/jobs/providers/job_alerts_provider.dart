@@ -75,12 +75,20 @@ class JobAlertsNotifier extends StateNotifier<List<JobAlert>> {
 
   Future<void> acceptJob(String bookingId, String partnerId) async {
     try {
+      print('🔵 [JobAlertsProvider] Accepting job...');
+      print('   Booking ID: $bookingId');
+      print('   Partner ID: $partnerId');
+
       await _supabase.acceptJob(
         bookingId: bookingId,
         partnerId: partnerId,
       );
+
+      print('✅ [JobAlertsProvider] Job accepted, removing alert from state');
       removeAlert(bookingId);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ [JobAlertsProvider] Error accepting job: $e');
+      print('   Stack trace: $stackTrace');
       rethrow;
     }
   }
