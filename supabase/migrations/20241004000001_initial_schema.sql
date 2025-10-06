@@ -1,5 +1,4 @@
 -- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Custom types
@@ -66,7 +65,7 @@ CREATE TABLE public.partner_profiles (
 
 -- Services
 CREATE TABLE public.services (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL CHECK (length(name) >= 2),
     description TEXT CHECK (length(description) <= 500),
     category service_category NOT NULL,
@@ -83,7 +82,7 @@ CREATE TABLE public.services (
 
 -- Service pricing tiers
 CREATE TABLE public.service_pricing_tiers (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     service_id UUID REFERENCES public.services(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
@@ -96,7 +95,7 @@ CREATE TABLE public.service_pricing_tiers (
 
 -- Bookings
 CREATE TABLE public.bookings (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     customer_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     partner_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
     service_id UUID REFERENCES public.services(id) ON DELETE RESTRICT NOT NULL,
@@ -120,7 +119,7 @@ CREATE TABLE public.bookings (
 
 -- Booking timeline
 CREATE TABLE public.booking_timeline (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     booking_id UUID REFERENCES public.bookings(id) ON DELETE CASCADE NOT NULL,
     status booking_status NOT NULL,
     timestamp TIMESTAMPTZ DEFAULT NOW(),
@@ -133,7 +132,7 @@ CREATE TABLE public.booking_timeline (
 
 -- Ratings
 CREATE TABLE public.ratings (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     booking_id UUID REFERENCES public.bookings(id) ON DELETE CASCADE UNIQUE NOT NULL,
     customer_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     partner_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
@@ -147,7 +146,7 @@ CREATE TABLE public.ratings (
 
 -- OTP sessions (for temporary storage during auth)
 CREATE TABLE public.otp_sessions (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     phone TEXT NOT NULL,
     otp_hash TEXT NOT NULL,
     user_type user_type NOT NULL,
@@ -159,7 +158,7 @@ CREATE TABLE public.otp_sessions (
 
 -- Notifications
 CREATE TABLE public.notifications (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
     type TEXT NOT NULL,
     title TEXT NOT NULL,
@@ -173,7 +172,7 @@ CREATE TABLE public.notifications (
 
 -- File uploads
 CREATE TABLE public.file_uploads (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     file_name TEXT NOT NULL,
     file_path TEXT NOT NULL,

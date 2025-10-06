@@ -8,7 +8,9 @@ import '../models/address.dart';
 
 part 'api_service.g.dart';
 
-@RestApi(baseUrl: 'http://127.0.0.1:54321/functions/v1')
+// Note: baseUrl is now passed dynamically from DioClient
+// No hardcoded URL in annotation
+@RestApi()
 abstract class ApiService {
   factory ApiService(Dio dio, {String baseUrl}) = _ApiService;
 

@@ -13,9 +13,7 @@ class _ApiService implements ApiService {
     this._dio, {
     this.baseUrl,
     this.errorLogger,
-  }) {
-    baseUrl ??= 'http://127.0.0.1:54321/functions/v1';
-  }
+  });
 
   final Dio _dio;
 

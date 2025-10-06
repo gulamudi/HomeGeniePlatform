@@ -1,25 +1,55 @@
 /// Global application configuration
 /// This file controls feature flags and environment settings
+///
+/// 🔧 TO SWITCH ENVIRONMENT: Change the value of [currentEnvironment] below
+enum Environment { local, production }
+
+class EnvironmentConfig {
+  final String supabaseUrl;
+  final String supabaseAnonKey;
+  final String functionsBaseUrl;
+
+  const EnvironmentConfig({
+    required this.supabaseUrl,
+    required this.supabaseAnonKey,
+    required this.functionsBaseUrl,
+  });
+}
+
 class AppConfig {
-  // Environment
-  static const String environment = String.fromEnvironment(
-    'ENV',
-    defaultValue: 'development',
-  );
+  // ==========================================
+  // 🔧 CHANGE THIS TO SWITCH ENVIRONMENT
+  // ==========================================
+  static const Environment currentEnvironment = Environment.local;
+  // ==========================================
 
-  static bool get isDevelopment => environment == 'development';
-  static bool get isProduction => environment == 'production';
+  // Environment configurations
+  static const Map<Environment, EnvironmentConfig> _configs = {
+    Environment.local: EnvironmentConfig(
+      supabaseUrl: 'http://127.0.0.1:54321',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+      functionsBaseUrl: 'http://127.0.0.1:54321/functions/v1',
+    ),
+    Environment.production: EnvironmentConfig(
+      // TODO: Replace with your production Supabase project details
+      supabaseUrl: 'https://your-project.supabase.co',
+      supabaseAnonKey: 'your-production-anon-key',
+      functionsBaseUrl: 'https://your-project.supabase.co/functions/v1',
+    ),
+  };
 
-  // API Configuration
-  static const String supabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'http://127.0.0.1:54321',
-  );
+  // Get current configuration
+  static EnvironmentConfig get _currentConfig => _configs[currentEnvironment]!;
 
-  static const String supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
-  );
+  // Environment helpers
+  static bool get isDevelopment => currentEnvironment == Environment.local;
+  static bool get isProduction => currentEnvironment == Environment.production;
+  static String get environmentName => currentEnvironment.name;
+
+  // API Configuration - dynamically retrieved based on current environment
+  static String get supabaseUrl => _currentConfig.supabaseUrl;
+  static String get supabaseAnonKey => _currentConfig.supabaseAnonKey;
+  static String get functionsBaseUrl => _currentConfig.functionsBaseUrl;
 
   // Feature Flags
 
