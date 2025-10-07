@@ -274,29 +274,45 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
               controller: _tabController,
               children: [
                 // Upcoming Bookings
-                upcomingBookings.isEmpty
-                    ? _EmptyState()
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: upcomingBookings.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final booking = upcomingBookings[index];
-                          return _BookingCard(booking: booking);
-                        },
-                      ),
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await ref.read(bookingsProvider.notifier).loadBookings();
+                  },
+                  child: upcomingBookings.isEmpty
+                      ? ListView(
+                          padding: const EdgeInsets.all(16),
+                          children: const [_EmptyState()],
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: upcomingBookings.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final booking = upcomingBookings[index];
+                            return _BookingCard(booking: booking);
+                          },
+                        ),
+                ),
                 // Booking History
-                pastBookings.isEmpty
-                    ? _EmptyState(isHistory: true)
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: pastBookings.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final booking = pastBookings[index];
-                          return _BookingCard(booking: booking);
-                        },
-                      ),
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await ref.read(bookingsProvider.notifier).loadBookings();
+                  },
+                  child: pastBookings.isEmpty
+                      ? ListView(
+                          padding: const EdgeInsets.all(16),
+                          children: const [_EmptyState(isHistory: true)],
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: pastBookings.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final booking = pastBookings[index];
+                            return _BookingCard(booking: booking);
+                          },
+                        ),
+                ),
               ],
             ),
           ),

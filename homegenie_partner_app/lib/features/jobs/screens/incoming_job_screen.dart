@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:shared/theme/app_theme.dart';
 import '../providers/job_alerts_provider.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../home/providers/jobs_provider.dart';
+import '../../../core/constants/app_constants.dart';
 
 /// Full-screen incoming call-like UI for job offers
 /// Triggered when partner receives a new job notification via Supabase Realtime
@@ -405,6 +407,11 @@ class _IncomingJobScreenState extends ConsumerState<IncomingJobScreen>
 
       print('✅ [IncomingJobScreen] Job accepted successfully!');
 
+      // Refresh job lists
+      ref.invalidate(jobsProvider(AppConstants.tabToday));
+      ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
+      ref.invalidate(jobsProvider(AppConstants.tabAvailable));
+
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -479,6 +486,11 @@ class _IncomingJobScreenState extends ConsumerState<IncomingJobScreen>
     try {
       final bookingId = widget.jobData['booking_id'];
       await ref.read(jobAlertsProvider.notifier).rejectJob(bookingId);
+
+      // Refresh job lists
+      ref.invalidate(jobsProvider(AppConstants.tabToday));
+      ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
+      ref.invalidate(jobsProvider(AppConstants.tabAvailable));
 
       if (mounted) {
         Navigator.of(context).pop(false);

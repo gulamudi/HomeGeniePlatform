@@ -378,7 +378,7 @@ class JobDetailsScreen extends ConsumerWidget {
     print('  Job ID: ${job.id}');
     print('  Status: ${job.status}');
     print('  Is Today: ${job.isToday}');
-    print('  Expected statuses - Pending: ${AppConstants.jobStatusPending}, Accepted: ${AppConstants.jobStatusAccepted}');
+    print('  Expected statuses - Pending: ${AppConstants.jobStatusPending}, Confirmed: ${AppConstants.jobStatusConfirmed}');
 
     // For pending (available) jobs, show accept/reject buttons
     if (job.status == AppConstants.jobStatusPending) {
@@ -446,8 +446,8 @@ class JobDetailsScreen extends ConsumerWidget {
       );
     }
 
-    // For accepted/confirmed jobs, show Start Job (if today) and Cancel Job buttons
-    if (job.status == AppConstants.jobStatusAccepted || job.status == AppConstants.jobStatusConfirmed) {
+    // For confirmed jobs, show Start Job (if today) and Cancel Job buttons
+    if (job.status == AppConstants.jobStatusConfirmed) {
       return Container(
         decoration: const BoxDecoration(
           color: Colors.white,

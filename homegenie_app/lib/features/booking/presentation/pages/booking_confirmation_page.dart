@@ -131,7 +131,7 @@ class BookingConfirmationPage extends ConsumerWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        context.go('/booking/$bookingId');
+                        context.push('/booking/$bookingId');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryBlue,
@@ -150,10 +150,14 @@ class BookingConfirmationPage extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // Reset booking state
                         ref.read(bookingProvider.notifier).reset();
-                        context.go('/');
+                        // Refresh bookings list
+                        await ref.read(bookingsProvider.notifier).loadBookings();
+                        if (context.mounted) {
+                          context.go('/');
+                        }
                       },
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
@@ -245,6 +249,12 @@ class BookingConfirmationPage extends ConsumerWidget {
       if (address['city'] != null) parts.add(address['city']);
       return parts.join(', ');
     }
-    return address.toString();
+    // Handle Address object
+    final parts = <String>[];
+    parts.add(address.flat_house_no);
+    parts.add(address.street_name);
+    parts.add(address.area);
+    parts.add(address.city);
+    return parts.join(', ');
   }
 }

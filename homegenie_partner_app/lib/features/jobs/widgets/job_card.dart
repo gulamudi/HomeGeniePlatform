@@ -262,14 +262,7 @@ class JobCard extends StatelessWidget {
                 ),
                 child: const Text('Accept'),
               ),
-            ] else
-              OutlinedButton(
-                onPressed: onTap,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                ),
-                child: const Text('View Details'),
-              ),
+            ],
           ],
         ),
 
@@ -403,8 +396,7 @@ class JobCard extends StatelessWidget {
         color = AppTheme.statusPending;
         label = 'New';
         break;
-      case AppConstants.jobStatusAccepted:
-      case AppConstants.jobStatusConfirmed:  // Backend uses 'confirmed' for accepted jobs
+      case AppConstants.jobStatusConfirmed:
         color = AppTheme.statusConfirmed;
         label = 'Accepted';
         break;

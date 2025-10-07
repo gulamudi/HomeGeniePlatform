@@ -196,10 +196,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             backgroundColor: AppTheme.successGreen,
           ),
         );
-        // Refresh the available jobs list
+        // Refresh all job lists
         ref.invalidate(jobsProvider(AppConstants.tabAvailable));
-        // Also refresh today's jobs in case the accepted job is for today
         ref.invalidate(jobsProvider(AppConstants.tabToday));
+        ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
       }
     } catch (e) {
       if (mounted) {
@@ -245,8 +245,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               backgroundColor: AppTheme.textSecondary,
             ),
           );
-          // Refresh the available jobs list
+          // Refresh all job lists
           ref.invalidate(jobsProvider(AppConstants.tabAvailable));
+          ref.invalidate(jobsProvider(AppConstants.tabToday));
+          ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
         }
       } catch (e) {
         if (mounted) {

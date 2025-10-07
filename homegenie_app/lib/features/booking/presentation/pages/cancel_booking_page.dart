@@ -30,7 +30,14 @@ class _CancelBookingPageState extends ConsumerState<CancelBookingPage> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(bookingsProvider.notifier).cancelBooking(widget.bookingId);
+      final reason = _reasonController.text.trim().isNotEmpty
+          ? _reasonController.text.trim()
+          : 'Customer requested cancellation';
+
+      await ref.read(bookingsProvider.notifier).cancelBooking(
+        widget.bookingId,
+        reason: reason,
+      );
 
       if (mounted) {
         context.go('/');

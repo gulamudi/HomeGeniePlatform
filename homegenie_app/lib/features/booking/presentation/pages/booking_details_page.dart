@@ -42,9 +42,9 @@ class BookingDetailsPage extends ConsumerWidget {
     }
 
     final service = ref.watch(serviceByIdProvider(booking.service_id));
-    final isUpcoming = booking.status == 'upcoming' || booking.status == 'confirmed';
+    final isUpcoming = booking.status == 'pending' || booking.status == 'confirmed';
     final isCompleted = booking.status == 'completed';
-    final isCancelled = booking.status == 'cancelled';
+    final isCancelled = booking.status == 'cancelled' || booking.status == 'no_show' || booking.status == 'disputed';
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,

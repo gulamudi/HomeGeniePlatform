@@ -16,13 +16,14 @@ class AppConstants {
   static const String routeSupport = '/support';
   static const String routePaymentGuide = '/payment-guide';
 
-  // Job Status
+  // Job Status - these match the database enum values
   static const String jobStatusPending = 'pending';
-  static const String jobStatusAccepted = 'accepted';
-  static const String jobStatusConfirmed = 'confirmed';  // Backend uses 'confirmed' for accepted jobs
+  static const String jobStatusConfirmed = 'confirmed';  // Used for accepted jobs
   static const String jobStatusInProgress = 'in_progress';
   static const String jobStatusCompleted = 'completed';
   static const String jobStatusCancelled = 'cancelled';
+  static const String jobStatusNoShow = 'no_show';
+  static const String jobStatusDisputed = 'disputed';
 
   // Job Actions
   static const String actionAccept = 'accept';

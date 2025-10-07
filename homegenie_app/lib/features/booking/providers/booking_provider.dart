@@ -223,7 +223,10 @@ class BookingsNotifier extends StateNotifier<List<Booking>> {
     try {
       final response = await _apiService.cancelBooking(
         bookingId,
-        {'reason': reason ?? 'Customer requested cancellation'},
+        {
+          'bookingId': bookingId,
+          'reason': reason ?? 'Customer requested cancellation',
+        },
       );
 
       if (response.success) {
@@ -274,12 +277,12 @@ final bookingsProvider = StateNotifierProvider<BookingsNotifier, List<Booking>>(
 
 final upcomingBookingsProvider = Provider<List<Booking>>((ref) {
   final bookings = ref.watch(bookingsProvider);
-  return bookings.where((b) => b.status == 'upcoming' || b.status == 'confirmed').toList();
+  return bookings.where((b) => b.status == 'pending' || b.status == 'confirmed' || b.status == 'in_progress').toList();
 });
 
 final pastBookingsProvider = Provider<List<Booking>>((ref) {
   final bookings = ref.watch(bookingsProvider);
-  return bookings.where((b) => b.status == 'completed' || b.status == 'cancelled').toList();
+  return bookings.where((b) => b.status == 'completed' || b.status == 'cancelled' || b.status == 'no_show' || b.status == 'disputed').toList();
 });
 
 final bookingByIdProvider = Provider.family<Booking?, String>((ref, id) {

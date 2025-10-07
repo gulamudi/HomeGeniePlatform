@@ -385,6 +385,12 @@ class _BookingCheckoutPageState extends ConsumerState<BookingCheckoutPage> {
       if (address['city'] != null) parts.add(address['city']);
       return parts.join(', ');
     }
-    return address.toString();
+    // Handle Address object
+    final parts = <String>[];
+    parts.add(address.flat_house_no);
+    parts.add(address.street_name);
+    parts.add(address.area);
+    parts.add(address.city);
+    return parts.join(', ');
   }
 }
