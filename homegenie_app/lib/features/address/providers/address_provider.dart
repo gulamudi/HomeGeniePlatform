@@ -16,37 +16,14 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
             .map((json) => Address.fromJson(json as Map<String, dynamic>))
             .toList();
         state = addressList;
+      } else {
+        // If no data returned, set empty state
+        state = [];
       }
     } catch (e) {
-      // If API fails, use mock data for development
-      state = [
-        const Address(
-          id: '1',
-          flat_house_no: '101',
-          building_apartment_name: 'Green Valley Apartments',
-          street_name: 'MG Road',
-          landmark: 'Near City Mall',
-          area: 'Whitefield',
-          city: 'Bangalore',
-          state: 'Karnataka',
-          pin_code: '560066',
-          type: 'home',
-          is_default: true,
-        ),
-        const Address(
-          id: '2',
-          flat_house_no: 'Floor 5',
-          building_apartment_name: 'Tech Park',
-          street_name: 'ITPL Main Road',
-          landmark: 'Opposite Metro Station',
-          area: 'Whitefield',
-          city: 'Bangalore',
-          state: 'Karnataka',
-          pin_code: '560066',
-          type: 'work',
-          is_default: false,
-        ),
-      ];
+      print('Error loading addresses: $e');
+      // On error, set empty state - do NOT use mock data
+      state = [];
     }
   }
 
@@ -88,40 +65,8 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
         state = [...state, newAddress];
       }
     } catch (e) {
-      // Fallback to mock implementation
-      final shouldBeDefault = state.isEmpty || address.is_default;
-
-      if (shouldBeDefault) {
-        state = state.map((a) => Address(
-          id: a.id,
-          flat_house_no: a.flat_house_no,
-          building_apartment_name: a.building_apartment_name,
-          street_name: a.street_name,
-          landmark: a.landmark,
-          area: a.area,
-          city: a.city,
-          state: a.state,
-          pin_code: a.pin_code,
-          type: a.type,
-          is_default: false,
-        )).toList();
-      }
-
-      final newAddress = Address(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        flat_house_no: address.flat_house_no,
-        building_apartment_name: address.building_apartment_name,
-        street_name: address.street_name,
-        landmark: address.landmark,
-        area: address.area,
-        city: address.city,
-        state: address.state,
-        pin_code: address.pin_code,
-        type: address.type,
-        is_default: shouldBeDefault,
-      );
-
-      state = [...state, newAddress];
+      print('Error adding address: $e');
+      rethrow;
     }
   }
 
@@ -162,24 +107,8 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
         }
       }
     } catch (e) {
-      // Fallback to mock implementation
-      if (address.is_default) {
-        state = state.map((a) => a.id == id ? address : Address(
-          id: a.id,
-          flat_house_no: a.flat_house_no,
-          building_apartment_name: a.building_apartment_name,
-          street_name: a.street_name,
-          landmark: a.landmark,
-          area: a.area,
-          city: a.city,
-          state: a.state,
-          pin_code: a.pin_code,
-          type: a.type,
-          is_default: false,
-        )).toList();
-      } else {
-        state = state.map((a) => a.id == id ? address : a).toList();
-      }
+      print('Error updating address: $e');
+      rethrow;
     }
   }
 
@@ -211,27 +140,8 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
         }
       }
     } catch (e) {
-      // Fallback to mock implementation
-      state = state.where((a) => a.id != id).toList();
-
-      if (state.isNotEmpty && !state.any((a) => a.is_default)) {
-        state = [
-          Address(
-            id: state[0].id,
-            flat_house_no: state[0].flat_house_no,
-            building_apartment_name: state[0].building_apartment_name,
-            street_name: state[0].street_name,
-            landmark: state[0].landmark,
-            area: state[0].area,
-            city: state[0].city,
-            state: state[0].state,
-            pin_code: state[0].pin_code,
-            type: state[0].type,
-            is_default: true,
-          ),
-          ...state.skip(1),
-        ];
-      }
+      print('Error deleting address: $e');
+      rethrow;
     }
   }
 
@@ -253,20 +163,8 @@ class AddressesNotifier extends StateNotifier<List<Address>> {
         is_default: true,
       ));
     } catch (e) {
-      // Fallback to mock implementation
-      state = state.map((a) => Address(
-        id: a.id,
-        flat_house_no: a.flat_house_no,
-        building_apartment_name: a.building_apartment_name,
-        street_name: a.street_name,
-        landmark: a.landmark,
-        area: a.area,
-        city: a.city,
-        state: a.state,
-        pin_code: a.pin_code,
-        type: a.type,
-        is_default: a.id == id,
-      )).toList();
+      print('Error setting default address: $e');
+      rethrow;
     }
   }
 }

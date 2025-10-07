@@ -183,8 +183,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .eq('id', response.user!.id)
           .maybeSingle();
 
-      if (existingUser == null) {
-        // Create new partner user (fallback if trigger didn't work)
+      if (existingUser != null) {
+        // User exists - check if it's a partner
+        final existingUserType = existingUser['user_type'];
+        if (existingUserType != 'partner') {
+          // This is a customer account trying to login as partner
+          print('❌ Phone number registered as customer');
+          await _supabase.auth.signOut(); // Sign out the session
+          state = state.copyWith(isLoading: false);
+          throw Exception('This phone number is already registered as a Customer. Please use the Customer app to login.');
+        }
+        print('✅ Existing partner user found');
+      } else {
+        // User doesn't exist - create new partner user
         print('🔨 Creating new partner user...');
 
         final userData = {

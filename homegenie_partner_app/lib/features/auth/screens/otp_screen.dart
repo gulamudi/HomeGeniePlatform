@@ -73,16 +73,33 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       textStyle: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w600,
+        color: AppTheme.textPrimary,
       ),
       decoration: BoxDecoration(
+        color: Colors.white,
         border: Border.all(color: AppTheme.borderColor),
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: BoxDecoration(
         color: Colors.white,
+        border: Border.all(color: AppTheme.primaryBlue, width: 2),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      ),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: BoxDecoration(
+        color: AppTheme.primaryBlue.withOpacity(0.1),
+        border: Border.all(color: AppTheme.primaryBlue),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
       ),
     );
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -93,113 +110,109 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppTheme.paddingLarge),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-
-              // Icon
-              Icon(
-                Icons.message,
-                size: 64,
-                color: AppTheme.primaryBlue,
-              ),
-
-              const SizedBox(height: 24),
-
+              const SizedBox(height: 20),
               // Title
               Text(
-                'Verify Your Number',
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 12),
-
-              // Subtitle
-              Text(
-                'Enter the 6-digit code sent to\n+91 ${widget.phone}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textSecondary,
+                'Verify OTP',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
                 ),
-                textAlign: TextAlign.center,
               ),
-
-              if (!AppConfig.enableOtpVerification) ...[
-                const SizedBox(height: 8),
+              const SizedBox(height: 8),
+              // Subtitle
+              RichText(
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Enter the 6-digit code sent to\n'),
+                    TextSpan(
+                      text: '+91 ${widget.phone}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 48),
+              // OTP Input
+              Center(
+                child: Pinput(
+                  controller: _otpController,
+                  length: 6,
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: focusedPinTheme,
+                  submittedPinTheme: submittedPinTheme,
+                  onCompleted: (pin) => _verifyOtp(),
+                  autofocus: true,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Bypass Notice (only in development)
+              if (!AppConfig.enableOtpVerification)
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppTheme.paddingMedium),
                   decoration: BoxDecoration(
                     color: AppTheme.warningYellow.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    border: Border.all(color: AppTheme.warningYellow),
                   ),
-                  child: Text(
-                    'Development Mode: Use any OTP (e.g., ${AppConfig.testOtp})',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.warningYellow.withOpacity(0.9),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 48),
-
-              // OTP Input
-              Pinput(
-                controller: _otpController,
-                length: 6,
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    border: Border.all(color: AppTheme.primaryBlue, width: 2),
-                  ),
-                ),
-                submittedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    border: Border.all(color: AppTheme.primaryBlue),
-                    color: AppTheme.primaryBlue.withOpacity(0.05),
-                  ),
-                ),
-                onCompleted: (_) => _verifyOtp(),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Verify button
-              ElevatedButton(
-                onPressed: _isLoading ? null : _verifyOtp,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: AppTheme.warningYellow,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'OTP verification is bypassed for testing. Use 123456 as OTP.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
-                      )
-                    : const Text('Verify OTP'),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 32),
+              // Verify Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _verifyOtp,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Verify OTP'),
+                ),
               ),
-
-              const SizedBox(height: 24),
-
+              const SizedBox(height: 16),
               // Resend OTP
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Didn't receive the code? ",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      ref.read(authProvider.notifier).sendOtp(widget.phone);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('OTP sent again')),
-                      );
-                    },
-                    child: const Text('Resend'),
-                  ),
-                ],
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    ref.read(authProvider.notifier).sendOtp(widget.phone);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('OTP sent successfully')),
+                    );
+                  },
+                  child: const Text('Resend OTP'),
+                ),
               ),
             ],
           ),

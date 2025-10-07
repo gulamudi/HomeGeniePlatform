@@ -23,6 +23,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // Invalidate providers to ensure fresh data on login
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(jobsProvider(AppConstants.tabToday));
+      ref.invalidate(jobsProvider(AppConstants.tabUpcoming));
+      ref.invalidate(jobsProvider(AppConstants.tabAvailable));
+    });
   }
 
   @override
@@ -264,50 +271,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildEmptyState(String tab) {
-    String message;
+    String title;
+    String subtitle;
     IconData icon;
     String imageName;
 
     switch (tab) {
       case AppConstants.tabToday:
-        message = "No jobs scheduled for today";
+        title = "No jobs scheduled for today";
+        subtitle = "Check back later for new job opportunities";
         icon = Icons.event_available;
         imageName = 'empty_today';
         break;
       case AppConstants.tabUpcoming:
-        message = "No upcoming jobs";
+        title = "No upcoming jobs";
+        subtitle = "Your accepted jobs will appear here";
         icon = Icons.calendar_today;
         imageName = 'empty_upcoming';
         break;
       case AppConstants.tabHistory:
-        message = "No job history yet";
+        title = "No job history yet";
+        subtitle = "Completed jobs will show up here";
         icon = Icons.history;
         imageName = 'empty_history';
         break;
       case AppConstants.tabAvailable:
-        message = "No available jobs at the moment";
+        title = "No available jobs at the moment";
+        subtitle = "New jobs matching your skills will appear here";
         icon = Icons.work_outline;
         imageName = 'empty_available';
         break;
       default:
-        message = "No jobs found";
+        title = "No jobs found";
+        subtitle = "Check back later";
         icon = Icons.work_outline;
         imageName = 'empty_jobs';
     }
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildEmptyStateImage(imageName, icon),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppTheme.textSecondary,
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildEmptyStateImage(imageName, icon),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

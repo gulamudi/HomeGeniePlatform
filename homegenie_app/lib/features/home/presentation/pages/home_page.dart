@@ -21,6 +21,12 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Invalidate providers to ensure fresh data on login
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(addressesProvider);
+      ref.invalidate(bookingsProvider);
+    });
   }
 
   @override

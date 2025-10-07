@@ -94,7 +94,7 @@ class _OtpVerificationPageState extends ConsumerState<OtpVerificationPage> {
                   children: [
                     const TextSpan(text: 'Enter the 6-digit code sent to\n'),
                     TextSpan(
-                      text: widget.phoneNumber,
+                      text: '+91 ${widget.phoneNumber}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary,
@@ -136,7 +136,7 @@ class _OtpVerificationPageState extends ConsumerState<OtpVerificationPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'OTP verification is bypassed for testing. Any 6-digit code will work.',
+                          'OTP verification is bypassed for testing. Use 123456 as OTP.',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppTheme.textPrimary,
                           ),
@@ -193,29 +193,20 @@ class _OtpVerificationPageState extends ConsumerState<OtpVerificationPage> {
     setState(() => _isLoading = true);
 
     try {
-      final success = await ref.read(authProvider.notifier).verifyOtp(
+      await ref.read(authProvider.notifier).verifyOtp(
         widget.phoneNumber,
         _otpController.text,
       );
 
       if (!mounted) return;
 
-      if (success) {
-        // Navigate to home, replacing all previous routes
-        context.go('/');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid OTP. Please try again.'),
-            backgroundColor: AppTheme.errorRed,
-          ),
-        );
-      }
+      // Navigate to home, replacing all previous routes
+      context.go('/');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: AppTheme.errorRed,
         ),
       );

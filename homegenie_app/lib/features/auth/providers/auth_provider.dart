@@ -69,6 +69,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .maybeSingle();
 
       if (response != null) {
+        // Check if user is a customer
+        final userType = response['user_type'];
+        if (userType != 'customer') {
+          // This is a partner account, sign out
+          print('❌ Partner account detected in session, signing out');
+          await _supabase.auth.signOut();
+          await StorageService.clear();
+          state = const AuthState();
+          return;
+        }
+
         // Convert snake_case response to camelCase for User model
         final userJson = {
           'id': response['id'],
@@ -250,9 +261,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .maybeSingle();
 
       app_user.User user;
-      if (existingUser == null) {
-        // User should be automatically created by database trigger
-        // Wait a moment and retry in case of race condition
+      if (existingUser != null) {
+        // User exists - check if it's a customer
+        final existingUserType = existingUser['user_type'];
+        if (existingUserType != 'customer') {
+          // This is a partner account trying to login as customer
+          print('❌ Phone number registered as partner');
+          await _supabase.auth.signOut(); // Sign out the session
+          state = state.copyWith(isLoading: false);
+          throw Exception('This phone number is already registered as a Partner. Please use the Partner app to login.');
+        }
+        print('✅ Existing customer user found');
+      } else {
+        // User doesn't exist - try trigger or create manually
         print('⏳ User not found, waiting for database trigger...');
         await Future.delayed(const Duration(milliseconds: 500));
 
@@ -263,6 +284,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
             .maybeSingle();
 
         if (retryUser != null) {
+          // Check user type again after trigger
+          final userType = retryUser['user_type'];
+          if (userType != 'customer') {
+            print('❌ Phone number registered as partner');
+            await _supabase.auth.signOut();
+            state = state.copyWith(isLoading: false);
+            throw Exception('This phone number is already registered as a Partner. Please use the Partner app to login.');
+          }
           print('✅ User created by trigger');
           existingUser = retryUser;
         } else {
@@ -330,7 +359,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         error: e.toString(),
       );
-      return false;
+      rethrow;
     }
   }
 
