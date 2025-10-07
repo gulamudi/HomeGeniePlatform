@@ -329,24 +329,35 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageName = isHistory ? 'empty_history' : 'empty_upcoming';
+    final fallbackIcon = isHistory ? Icons.history_outlined : Icons.calendar_today_outlined;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 192,
-              height: 192,
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundColor,
-                borderRadius: BorderRadius.circular(96),
-              ),
-              child: Icon(
-                isHistory ? Icons.history_outlined : Icons.calendar_today_outlined,
-                size: 96,
-                color: AppTheme.textHint,
-              ),
+            Image.asset(
+              'assets/images/$imageName.png',
+              width: 200,
+              height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 192,
+                  height: 192,
+                  decoration: BoxDecoration(
+                    color: AppTheme.backgroundColor,
+                    borderRadius: BorderRadius.circular(96),
+                  ),
+                  child: Icon(
+                    fallbackIcon,
+                    size: 96,
+                    color: AppTheme.textHint,
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 24),
             Text(

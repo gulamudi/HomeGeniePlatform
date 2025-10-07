@@ -110,6 +110,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       print('📱 Sending OTP to: $formattedPhone');
 
+      // Check if phone number is already registered with different user type
+      print('⏳ Checking for existing user with this phone...');
+      final existingUsers = await _supabase
+          .from('users')
+          .select('user_type')
+          .eq('phone', formattedPhone);
+
+      if (existingUsers.isNotEmpty) {
+        final existingUserType = existingUsers[0]['user_type'];
+        print('📋 Found existing user with type: $existingUserType');
+
+        if (existingUserType != 'partner') {
+          final errorMsg = 'This phone number is already registered as a Customer. Please use the Customer app to login.';
+          print('❌ $errorMsg');
+          state = state.copyWith(isLoading: false, error: errorMsg);
+          throw Exception(errorMsg);
+        }
+        print('✅ Phone number matches partner user type');
+      } else {
+        print('✅ No existing user found - new registration');
+      }
+
       // Send OTP via Supabase Auth with partner user_type metadata
       await _supabase.auth.signInWithOtp(
         phone: formattedPhone,

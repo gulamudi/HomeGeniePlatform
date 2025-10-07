@@ -87,6 +87,20 @@ class _DocumentVerificationScreenState
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text('Document Verification'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              context.go(AppConstants.routeProfileSetup);
+            },
+            child: const Text(
+              'Skip',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

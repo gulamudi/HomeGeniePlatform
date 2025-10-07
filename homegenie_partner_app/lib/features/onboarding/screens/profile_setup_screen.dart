@@ -166,7 +166,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   children: _serviceTypes.map((service) {
                     final isSelected = _selectedServices.contains(service);
                     return FilterChip(
-                      label: Text(service),
+                      label: Text(
+                        service,
+                        style: TextStyle(
+                          color: isSelected ? AppTheme.primaryBlue : AppTheme.textPrimary,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
                       selected: isSelected,
                       onSelected: (selected) {
                         setState(() {

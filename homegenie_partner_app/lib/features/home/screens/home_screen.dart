@@ -266,34 +266,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget _buildEmptyState(String tab) {
     String message;
     IconData icon;
+    String imageName;
 
     switch (tab) {
       case AppConstants.tabToday:
         message = "No jobs scheduled for today";
         icon = Icons.event_available;
+        imageName = 'empty_today';
         break;
       case AppConstants.tabUpcoming:
         message = "No upcoming jobs";
         icon = Icons.calendar_today;
+        imageName = 'empty_upcoming';
         break;
       case AppConstants.tabHistory:
         message = "No job history yet";
         icon = Icons.history;
+        imageName = 'empty_history';
         break;
       case AppConstants.tabAvailable:
         message = "No available jobs at the moment";
         icon = Icons.work_outline;
+        imageName = 'empty_available';
         break;
       default:
         message = "No jobs found";
         icon = Icons.work_outline;
+        imageName = 'empty_jobs';
     }
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: AppTheme.iconSecondary),
+          _buildEmptyStateImage(imageName, icon),
           const SizedBox(height: 16),
           Text(
             message,
@@ -303,6 +309,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEmptyStateImage(String imageName, IconData fallbackIcon) {
+    return Image.asset(
+      'assets/images/$imageName.png',
+      width: 200,
+      height: 200,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(fallbackIcon, size: 64, color: AppTheme.iconSecondary);
+      },
     );
   }
 }

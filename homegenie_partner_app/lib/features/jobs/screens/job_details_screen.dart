@@ -300,7 +300,7 @@ class JobDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    '\$${(job.partnerEarning ?? job.amount * 0.8).toStringAsFixed(2)}',
+                    '₹${(job.partnerEarning ?? 0).toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
@@ -351,7 +351,7 @@ class JobDetailsScreen extends ConsumerWidget {
                 ],
               ),
             ],
-            const SizedBox(height: 200), // Space for bottom actions
+            const SizedBox(height: 16),
           ],
         ),
       ),
