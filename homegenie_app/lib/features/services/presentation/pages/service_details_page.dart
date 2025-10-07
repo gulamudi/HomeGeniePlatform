@@ -10,6 +10,23 @@ class ServiceDetailsPage extends ConsumerWidget {
 
   const ServiceDetailsPage({super.key, required this.serviceId});
 
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'cleaning':
+        return Icons.home_outlined;
+      case 'plumbing':
+        return Icons.plumbing;
+      case 'electrical':
+        return Icons.bolt;
+      case 'gardening':
+        return Icons.eco_outlined;
+      case 'handyman':
+        return Icons.handyman;
+      default:
+        return Icons.home_repair_service;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(serviceByIdProvider(serviceId));
@@ -22,126 +39,125 @@ class ServiceDetailsPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(service.name),
-              background: Container(
-                color: AppTheme.primaryBlue.withOpacity(0.1),
-                child: const Icon(
-                  Icons.home_repair_service_outlined,
-                  size: 80,
-                  color: AppTheme.primaryBlue,
-                ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppTheme.paddingMedium),
+      backgroundColor: const Color(0xFFF6F7F8),
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 120),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildPriceCard(context, service),
-                  const SizedBox(height: AppTheme.paddingMedium),
-                  _buildSection(context, 'Description', service.description),
-                  const SizedBox(height: AppTheme.paddingMedium),
-                  _buildListSection(context, 'What\'s Included', service.includes),
-                  const SizedBox(height: AppTheme.paddingMedium),
-                  _buildListSection(context, 'What\'s Excluded', service.excludes),
-                  const SizedBox(height: 100),
+                  // Header section
+                  Row(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1173D4).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _getCategoryIcon(service.category),
+                          color: const Color(0xFF1173D4),
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              service.name,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'For a spotless home',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Service Description
+                  _buildSection(context, 'Service Description', service.description),
+                  const SizedBox(height: 24),
+
+                  // Pricing
+                  _buildPricingSection(context, service),
+                  const SizedBox(height: 24),
+
+                  // What's Included
+                  _buildIncludedSection(context, service.includes),
+                  const SizedBox(height: 24),
+
+                  // What's Excluded
+                  _buildExcludedSection(context, service.excludes),
+                  const SizedBox(height: 24),
+
+                  // Terms & Conditions
+                  _buildTermsSection(context),
                 ],
+              ),
+            ),
+          ),
+
+          // Bottom button
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF6F7F8),
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ref.read(bookingProvider.notifier).setService(serviceId, service.base_price);
+                      context.push('/booking/select-date-time?serviceId=$serviceId&basePrice=${service.base_price}');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1173D4),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Book Now',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ],
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(AppTheme.paddingMedium),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () {
-                ref.read(bookingProvider.notifier).setService(serviceId, service.base_price);
-                context.push('/booking/select-date-time?serviceId=$serviceId&basePrice=${service.base_price}');
-              },
-              child: const Text('Book Now'),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceCard(BuildContext context, service) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.paddingMedium),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
-              ),
-              child: const Icon(
-                Icons.currency_rupee,
-                color: AppTheme.primaryBlue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Starting from',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  Text(
-                    '₹${service.base_price.toStringAsFixed(0)}',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Duration',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  '${service.duration_hours} hrs',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -152,52 +168,188 @@ class ServiceDetailsPage extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           content,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textSecondary,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF475569),
+            height: 1.5,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildListSection(BuildContext context, String title, List<String> items) {
+  Widget _buildPricingSection(BuildContext context, service) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+        const Text(
+          'Pricing',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Base Price',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                  Text(
+                    '\$${service.base_price.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Price may vary based on home size and specific requirements.',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIncludedSection(BuildContext context, List<String> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'What\'s Included',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 8),
         ...items.map((item) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(
                 Icons.check_circle,
-                size: 20,
-                color: AppTheme.successGreen,
+                size: 24,
+                color: Color(0xFF22C55E),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   item,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF475569),
+                  ),
                 ),
               ),
             ],
           ),
         )),
+      ],
+    );
+  }
+
+  Widget _buildExcludedSection(BuildContext context, List<String> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'What\'s Excluded',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...items.map((item) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.cancel,
+                size: 24,
+                color: Color(0xFFEF4444),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildTermsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Terms & Conditions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Cancellations must be made at least 24 hours in advance. We are not liable for any pre-existing damage. Our team will arrive within a 1-hour window of your scheduled appointment time.',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF64748B),
+            height: 1.5,
+          ),
+        ),
       ],
     );
   }
