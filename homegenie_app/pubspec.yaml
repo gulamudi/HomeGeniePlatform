@@ -1,7 +1,7 @@
 name: homegenie_app
 description: "HomeGenie Customer App - On-demand home services"
 publish_to: 'none'
-version: 1.0.0+202510072116
+version: 1.0.0+202510080345
 
 environment:
   sdk: '>=3.1.0 <4.0.0'

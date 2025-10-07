@@ -17,18 +17,14 @@ interface SelectedPartner {
 }
 
 /**
- * Selects the best available partner for a booking
- * Selection criteria:
- * 1. Preferred partner if specified and available
- * 2. Verified partners who offer the service
- * 3. Currently available (isAvailable flag)
- * 4. Highest rated
+ * Gets all available partners for a booking
+ * TESTING MODE: Returns all partners
  */
-async function selectPartner(
+async function getAllPartners(
   supabase: any,
   criteria: PartnerSelectionCriteria
-): Promise<SelectedPartner | null> {
-  const { serviceId, preferredPartnerId } = criteria
+): Promise<SelectedPartner[]> {
+  const { serviceId } = criteria
 
   // Get service category
   const { data: service } = await supabase
@@ -39,39 +35,10 @@ async function selectPartner(
 
   if (!service) {
     console.error('Service not found:', serviceId)
-    return null
+    return []
   }
 
-  // If preferred partner is specified, check if they're available
-  if (preferredPartnerId) {
-    const { data: preferredPartner } = await supabase
-      .from('partner_profiles')
-      .select(`
-        user_id,
-        services,
-        verification_status,
-        rating,
-        availability,
-        users!inner(full_name)
-      `)
-      .eq('user_id', preferredPartnerId)
-      .eq('verification_status', 'verified')
-      .contains('services', [service.category])
-      .single()
-
-    if (preferredPartner) {
-      const availability = preferredPartner.availability || {}
-      if (availability.isAvailable === true) {
-        return {
-          partnerId: preferredPartner.user_id,
-          fullName: preferredPartner.users.full_name,
-          rating: preferredPartner.rating || 0,
-        }
-      }
-    }
-  }
-
-  // Find available partners - TESTING MODE: Just get first partner
+  // Find all partners - TESTING MODE: Get all partners
   const { data: partners, error } = await supabase
     .from('partner_profiles')
     .select(`
@@ -82,37 +49,17 @@ async function selectPartner(
     `)
     // .eq('verification_status', 'verified')  // Commented for testing
     // .contains('services', [service.category])  // Commented for testing
-    .limit(1)
 
   if (error || !partners || partners.length === 0) {
     console.error('No available partners found:', error)
-    return null
+    return []
   }
 
-  // TESTING MODE: Skip availability check, just use first partner
-  // Filter by availability
-  // const availablePartners = partners.filter((p: any) => {
-  //   const availability = p.availability || {}
-  //   return availability.isAvailable === true
-  // })
-
-  // if (availablePartners.length === 0) {
-  //   console.warn('No partners are currently available')
-  //   return null
-  // }
-
-  // Select the highest-rated available partner
-  // const selectedPartner = availablePartners.sort(
-  //   (a: any, b: any) => (b.rating || 0) - (a.rating || 0)
-  // )[0]
-
-  const selectedPartner = partners[0]
-
-  return {
-    partnerId: selectedPartner.user_id,
-    fullName: selectedPartner.users.full_name,
-    rating: selectedPartner.rating || 0,
-  }
+  return partners.map((p: any) => ({
+    partnerId: p.user_id,
+    fullName: p.users.full_name,
+    rating: p.rating || 0,
+  }))
 }
 
 /**
@@ -206,16 +153,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Select best partner
-    const selectedPartner = await selectPartner(supabase, {
+    // Get all available partners
+    const allPartners = await getAllPartners(supabase, {
       bookingId: booking.id,
       serviceId: booking.service_id,
       preferredPartnerId: booking.preferred_partner_id,
       bookingLocation,
     })
 
-    if (!selectedPartner) {
-      console.warn('No available partner found for booking:', bookingId)
+    if (allPartners.length === 0) {
+      console.warn('No available partners found for booking:', bookingId)
 
       // Notify customer that we're finding a provider
       await supabase.from('notifications').insert({
@@ -235,17 +182,24 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('✅ Selected partner:', selectedPartner.partnerId, selectedPartner.fullName)
+    console.log(`✅ Found ${allPartners.length} partners, notifying all...`)
 
-    // Send notification to partner (received via Realtime)
-    await notifyPartner(supabase, selectedPartner.partnerId, booking)
+    // Send notification to ALL partners (received via Realtime)
+    await Promise.all(
+      allPartners.map(partner =>
+        notifyPartner(supabase, partner.partnerId, booking)
+      )
+    )
 
     return new Response(
       JSON.stringify({
         success: true,
-        partnerId: selectedPartner.partnerId,
-        partnerName: selectedPartner.fullName,
-        rating: selectedPartner.rating,
+        notifiedPartners: allPartners.length,
+        partners: allPartners.map(p => ({
+          partnerId: p.partnerId,
+          partnerName: p.fullName,
+          rating: p.rating,
+        })),
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
