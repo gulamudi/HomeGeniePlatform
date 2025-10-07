@@ -155,80 +155,83 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
         children: [
           // Address Card at the top
           SizedBox(height: MediaQuery.of(context).padding.top + 16),
-          if (defaultAddress != null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: InkWell(
-                onTap: () => _showAddressSelector(context, ref),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: InkWell(
+              onTap: () => _showAddressSelector(context, ref),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      ),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: AppTheme.primaryBlue,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your Address',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            defaultAddress != null
+                                ? '${defaultAddress.flat_house_no}, ${defaultAddress.street_name}'
+                                : 'Tap to add address',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: defaultAddress != null
+                                  ? AppTheme.textSecondary
+                                  : AppTheme.textHint,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => context.push('/profile'),
+                      child: Container(
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                          color: AppTheme.primaryBlue,
+                          shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.location_on,
-                          color: AppTheme.primaryBlue,
-                          size: 24,
+                          Icons.person,
+                          color: Colors.white,
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Your Address',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${defaultAddress.flat_house_no}, ${defaultAddress.street_name}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => context.push('/profile'),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
+          ),
 
           // Tabs
           Padding(

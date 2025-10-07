@@ -110,8 +110,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       print('📱 Sending OTP to: $formattedPhone');
 
-      // Send OTP via Supabase Auth (same as consumer app)
-      await _supabase.auth.signInWithOtp(phone: formattedPhone);
+      // Send OTP via Supabase Auth with partner user_type metadata
+      await _supabase.auth.signInWithOtp(
+        phone: formattedPhone,
+        data: {
+          'user_type': 'partner',
+        },
+      );
 
       print('✅ OTP sent successfully');
       print('🔑 Use OTP: 123456 for test number 9999999999');
@@ -157,7 +162,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           .maybeSingle();
 
       if (existingUser == null) {
-        // Create new partner user
+        // Create new partner user (fallback if trigger didn't work)
         print('🔨 Creating new partner user...');
 
         final userData = {
@@ -174,6 +179,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
             .single();
 
         print('✅ Partner user created');
+
+        // Create partner profile as well
+        await _supabase
+            .from('partner_profiles')
+            .insert({'user_id': response.user!.id})
+            .select()
+            .maybeSingle();
+
+        print('✅ Partner profile created');
       }
 
       // Check if partner_profile exists to determine if onboarding is needed

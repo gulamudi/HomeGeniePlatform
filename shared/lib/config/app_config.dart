@@ -20,7 +20,7 @@ class AppConfig {
   // ==========================================
   // 🔧 CHANGE THIS TO SWITCH ENVIRONMENT
   // ==========================================
-  static const Environment currentEnvironment = Environment.local;
+  static const Environment currentEnvironment = Environment.production;
   // ==========================================
 
   // Environment configurations
@@ -32,9 +32,9 @@ class AppConfig {
     ),
     Environment.production: EnvironmentConfig(
       // TODO: Replace with your production Supabase project details
-      supabaseUrl: 'https://your-project.supabase.co',
-      supabaseAnonKey: 'your-production-anon-key',
-      functionsBaseUrl: 'https://your-project.supabase.co/functions/v1',
+      supabaseUrl: 'https://mxdxexbbrwjxbrdbrnzt.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14ZHhleGJicndqeGJyZGJybnp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3ODY3MzQsImV4cCI6MjA3NTM2MjczNH0.pMAsw0SBXDy_4u9om3wcsAMPYR03m5kbdg-9bosErkI',
+      functionsBaseUrl: 'https://mxdxexbbrwjxbrdbrnzt.supabase.co/functions/v1',
     ),
   };
 
