@@ -409,33 +409,27 @@ class _BookingCard extends ConsumerWidget {
       onTap: () {
         context.push('/booking/${booking.id}');
       },
-      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-          border: Border.all(color: AppTheme.borderColor, width: 1),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header: Service name, date/time, and status badge
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                  ),
-                  child: Icon(
-                    _getServiceIcon(service?.category ?? ''),
-                    color: AppTheme.primaryBlue,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -443,65 +437,70 @@ class _BookingCard extends ConsumerWidget {
                       Text(
                         service?.name ?? 'Service',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         '${dateFormat.format(booking.scheduled_date)} - ${timeFormat.format(booking.scheduled_date)}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary.withOpacity(0.6),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: AppTheme.iconSecondary,
-                  size: 20,
-                ),
+                const SizedBox(width: 8),
+                _buildStatusBadge(booking.status),
               ],
             ),
-            if (hasPartner) ...[
-              const SizedBox(height: 12),
-              Container(
-                height: 1,
-                color: AppTheme.borderColor,
+
+            // Dashed divider
+            const SizedBox(height: 16),
+            CustomPaint(
+              painter: DashedLinePainter(
+                color: AppTheme.borderColor.withOpacity(0.6),
               ),
-              const SizedBox(height: 12),
+              size: const Size(double.infinity, 1),
+            ),
+            const SizedBox(height: 16),
+
+            // Partner info
+            if (hasPartner) ...[
               Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
+                  ClipOval(
                     child: partner['avatar_url'] != null
-                        ? ClipOval(
-                            child: Image.network(
-                              partner['avatar_url'],
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
+                        ? Image.network(
+                            partner['avatar_url'],
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 40,
+                                height: 40,
+                                color: AppTheme.borderColor,
+                                child: const Icon(
                                   Icons.person,
-                                  color: AppTheme.primaryBlue,
+                                  color: AppTheme.textSecondary,
                                   size: 20,
-                                );
-                              },
-                            ),
+                                ),
+                              );
+                            },
                           )
-                        : const Icon(
-                            Icons.person,
-                            color: AppTheme.primaryBlue,
-                            size: 20,
+                        : Container(
+                            width: 40,
+                            height: 40,
+                            color: AppTheme.borderColor,
+                            child: const Icon(
+                              Icons.person,
+                              color: AppTheme.textSecondary,
+                              size: 20,
+                            ),
                           ),
                   ),
                   const SizedBox(width: 12),
@@ -512,34 +511,33 @@ class _BookingCard extends ConsumerWidget {
                         Text(
                           partner['full_name'] ?? 'Partner',
                           style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Row(
                           children: [
                             const Icon(
                               Icons.star,
-                              size: 14,
+                              size: 16,
                               color: Colors.amber,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 6),
                             Text(
                               _getPartnerRating(partner),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.textSecondary,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary.withOpacity(0.6),
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               _getPartnerReviewCount(partner),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textSecondary,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary.withOpacity(0.6),
                               ),
                             ),
                           ],
@@ -549,11 +547,123 @@ class _BookingCard extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
             ],
+
+            // Duration and Address
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.hourglass_top,
+                      size: 16,
+                      color: AppTheme.textSecondary.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${booking.duration_hours} ${booking.duration_hours == 1 ? 'hour' : 'hours'}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textPrimary.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.home,
+                      size: 16,
+                      color: AppTheme.textSecondary.withOpacity(0.6),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _getAddressDisplay(booking.address),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textPrimary.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color backgroundColor;
+    Color textColor;
+    String displayText;
+
+    switch (status.toLowerCase()) {
+      case 'pending':
+        backgroundColor = const Color(0xFFFEF3C7);
+        textColor = const Color(0xFFD97706);
+        displayText = 'Pending';
+        break;
+      case 'confirmed':
+        backgroundColor = const Color(0xFFD1FAE5);
+        textColor = const Color(0xFF059669);
+        displayText = 'Confirmed';
+        break;
+      case 'in_progress':
+        backgroundColor = const Color(0xFFDBEAFE);
+        textColor = const Color(0xFF2563EB);
+        displayText = 'In Progress';
+        break;
+      case 'completed':
+        backgroundColor = const Color(0xFFD1FAE5);
+        textColor = const Color(0xFF059669);
+        displayText = 'Completed';
+        break;
+      case 'cancelled':
+        backgroundColor = const Color(0xFFFEE2E2);
+        textColor = const Color(0xFFDC2626);
+        displayText = 'Cancelled';
+        break;
+      default:
+        backgroundColor = const Color(0xFFF3F4F6);
+        textColor = const Color(0xFF6B7280);
+        displayText = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        displayText,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  String _getAddressDisplay(dynamic address) {
+    if (address == null) return 'No address';
+
+    try {
+      if (address is Map<String, dynamic>) {
+        final street = address['street_name'] ?? address['streetName'];
+        if (street != null) return street;
+      }
+      return 'Address';
+    } catch (e) {
+      return 'Address';
+    }
   }
 
   IconData _getServiceIcon(String category) {
@@ -602,4 +712,36 @@ class _BookingCard extends ConsumerWidget {
       return '(No reviews)';
     }
   }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  final double dashWidth;
+  final double dashSpace;
+
+  DashedLinePainter({
+    required this.color,
+    this.dashWidth = 5.0,
+    this.dashSpace = 3.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    double startX = 0;
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
