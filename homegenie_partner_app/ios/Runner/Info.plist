@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -24,6 +26,15 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>We need notification permission to alert you of new job opportunities</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,16 +52,15 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>We need notification permission to alert you of new job opportunities</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>HomeGenie Partner needs your location to help customers find you and provide accurate service areas.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>HomeGenie Partner needs your location to help customers find you and provide accurate service areas, even when the app is in the background.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>HomeGenie Partner needs camera access to let you take photos of completed work.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HomeGenie Partner needs access to your photos to let you upload images of completed work.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>HomeGenie Partner needs permission to save photos to your library.</string>
 </dict>
 </plist>

@@ -45,5 +45,15 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>HomeGenie needs your location to find nearby service providers and provide accurate service delivery.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>HomeGenie needs your location to find nearby service providers and provide accurate service delivery, even when the app is in the background.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>HomeGenie needs camera access to let you take photos for service requests.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HomeGenie needs access to your photos to let you upload images for service requests.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>HomeGenie needs permission to save photos to your library.</string>
 </dict>
 </plist>
