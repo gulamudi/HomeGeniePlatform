@@ -6,7 +6,8 @@
       "Bash(supabase stop:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

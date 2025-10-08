@@ -25,6 +25,7 @@ class _JobNotificationListenerState
     extends ConsumerState<JobNotificationListener> with WidgetsBindingObserver {
   bool _isListening = false;
   StreamSubscription<AuthState>? _authSubscription;
+  String? _currentlyShownBookingId;
 
   @override
   void initState() {
@@ -99,6 +100,19 @@ class _JobNotificationListenerState
         // Show full-screen incoming job UI
         _showIncomingJobScreen(jobData);
       },
+      onJobDismissed: (bookingId) {
+        print('📱 [JobNotificationListener] onJobDismissed callback triggered!');
+        print('   Booking ID: $bookingId');
+        print('   Currently shown booking: $_currentlyShownBookingId');
+
+        // If the dismissed booking is currently being shown, dismiss the screen
+        if (_currentlyShownBookingId == bookingId) {
+          print('✅ [JobNotificationListener] Dismissing currently shown job screen');
+          _dismissIncomingJobScreen();
+        } else {
+          print('ℹ️ [JobNotificationListener] Dismissed booking is not currently shown');
+        }
+      },
     );
   }
 
@@ -111,7 +125,10 @@ class _JobNotificationListenerState
       return;
     }
 
+    // Track the currently shown booking ID
+    _currentlyShownBookingId = jobData['booking_id'];
     print('✅ [JobNotificationListener] Navigating to IncomingJobScreen...');
+    print('   Tracking booking ID: $_currentlyShownBookingId');
 
     // Navigate to incoming job screen using global navigator key
     navigatorState.push(
@@ -119,7 +136,25 @@ class _JobNotificationListenerState
         builder: (context) => IncomingJobScreen(jobData: jobData),
         fullscreenDialog: true,
       ),
-    );
+    ).then((_) {
+      // Clear tracking when screen is dismissed
+      print('📱 [JobNotificationListener] IncomingJobScreen dismissed');
+      _currentlyShownBookingId = null;
+    });
+  }
+
+  void _dismissIncomingJobScreen() {
+    print('📱 [JobNotificationListener] _dismissIncomingJobScreen called');
+
+    final navigatorState = AppRouter.navigatorKey.currentState;
+    if (navigatorState == null) {
+      print('⚠️ [JobNotificationListener] Navigator not available');
+      return;
+    }
+
+    print('✅ [JobNotificationListener] Popping IncomingJobScreen');
+    _currentlyShownBookingId = null;
+    navigatorState.pop();
   }
 
   @override

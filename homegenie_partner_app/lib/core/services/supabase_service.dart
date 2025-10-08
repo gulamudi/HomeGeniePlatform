@@ -275,6 +275,7 @@ class SupabaseService {
   RealtimeChannel subscribeToNotifications({
     required String partnerId,
     required Function(Map<String, dynamic>) onNotification,
+    Function(String notificationId)? onNotificationDeleted,
   }) {
     print('========================================');
     print('📡 [SupabaseService] SETTING UP REALTIME SUBSCRIPTION');
@@ -299,6 +300,33 @@ class SupabaseService {
             print('   Payload: ${payload.newRecord}');
             print('========================================');
             onNotification(payload.newRecord);
+          },
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: partnerId,
+          ),
+          callback: (payload) {
+            print('========================================');
+            print('🗑️ [SupabaseService] NOTIFICATION DELETED!');
+            print('   Old Record: ${payload.oldRecord}');
+            print('========================================');
+
+            // Extract notification ID from deleted record
+            final deletedNotificationId = payload.oldRecord['id']?.toString();
+            final bookingId = (payload.oldRecord['data'] as Map<String, dynamic>?)?['booking_id']?.toString();
+
+            print('   Notification ID: $deletedNotificationId');
+            print('   Booking ID: $bookingId');
+
+            if (onNotificationDeleted != null && bookingId != null) {
+              onNotificationDeleted(bookingId);
+            }
           },
         )
         .subscribe((status, [error]) {

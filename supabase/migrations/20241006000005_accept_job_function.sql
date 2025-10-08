@@ -51,6 +51,12 @@ BEGIN
         'Job accepted by partner'
     );
 
+    -- Delete notifications for OTHER partners (so they stop seeing this job offer)
+    DELETE FROM notifications
+    WHERE data->>'booking_id' = p_booking_id::text
+    AND user_id != p_partner_id
+    AND type = 'new_job_offer';
+
     -- Return success
     SELECT json_build_object(
         'success', true,

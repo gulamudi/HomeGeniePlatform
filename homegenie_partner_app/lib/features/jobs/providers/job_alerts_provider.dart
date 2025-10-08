@@ -62,6 +62,11 @@ class JobAlertsNotifier extends StateNotifier<List<JobAlert>> {
         final alert = JobAlert.fromMap(booking);
         state = [...state, alert];
       },
+      onJobDismissed: (bookingId) {
+        print('🔵 [JobAlertsProvider] Job dismissed: $bookingId');
+        print('   Removing from state...');
+        removeAlert(bookingId);
+      },
     );
   }
 

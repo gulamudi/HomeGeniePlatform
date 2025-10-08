@@ -13,6 +13,7 @@ class NotificationService {
 
   RealtimeChannel? _jobAlertsChannel;
   Function(Map<String, dynamic>)? _onNewJobCallback;
+  Function(String bookingId)? _onJobDismissedCallback;
 
   Future<void> init() async {
     print('🔔 [NotificationService] Initializing notification service...');
@@ -66,11 +67,13 @@ class NotificationService {
   void subscribeToJobAlerts({
     required String partnerId,
     required Function(Map<String, dynamic>) onNewJob,
+    Function(String bookingId)? onJobDismissed,
   }) {
     print('🔔 [NotificationService] subscribeToJobAlerts called');
     print('   Partner ID: $partnerId');
 
     _onNewJobCallback = onNewJob;
+    _onJobDismissedCallback = onJobDismissed;
 
     // Listen for notifications table inserts for this partner
     print('📡 [NotificationService] Setting up Supabase realtime subscription...');
@@ -100,6 +103,23 @@ class NotificationService {
           print('ℹ️ [NotificationService] Not a job offer notification (action: $action)');
         }
       },
+      onNotificationDeleted: (bookingId) async {
+        print('========================================');
+        print('🗑️ [NotificationService] NOTIFICATION DELETED!');
+        print('   Booking ID: $bookingId');
+        print('========================================');
+
+        // Cancel the local notification for this booking
+        await cancelNotification(bookingId.hashCode);
+
+        // Call the callback to dismiss the job offer UI
+        if (_onJobDismissedCallback != null) {
+          print('📱 [NotificationService] Triggering onJobDismissed callback...');
+          _onJobDismissedCallback!(bookingId);
+        } else {
+          print('⚠️ [NotificationService] No onJobDismissed callback registered');
+        }
+      },
     );
 
     print('✅ [NotificationService] Subscription setup complete');
@@ -117,6 +137,7 @@ class NotificationService {
       print('ℹ️ [NotificationService] No active channel to unsubscribe from');
     }
     _onNewJobCallback = null;
+    _onJobDismissedCallback = null;
   }
 
   /// Show full-screen job notification (incoming call style)
