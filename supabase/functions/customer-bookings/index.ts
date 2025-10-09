@@ -173,8 +173,28 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Calculate total amount (simplified - could include pricing tiers)
+        // Calculate total amount (simplified - using base price)
         const totalAmount = service.base_price * bookingData.durationHours;
+
+        // Transform address and extract location
+        const addressData = transformAddressToDb(bookingData.address);
+
+        // Create location point if latitude/longitude are provided
+        let locationPoint = null;
+        if (bookingData.address.latitude && bookingData.address.longitude) {
+          locationPoint = `POINT(${bookingData.address.longitude} ${bookingData.address.latitude})`;
+
+          // Validate location is within service area
+          const { data: isServiced } = await supabase.rpc('is_location_serviced', {
+            p_lat: bookingData.address.latitude,
+            p_lng: bookingData.address.longitude
+          });
+
+          if (!isServiced) {
+            console.warn('⚠️ Location may be outside service area:', bookingData.address);
+            // Don't block booking, just warn
+          }
+        }
 
         // Create booking
         const { data: booking, error: bookingError } = await supabase
@@ -184,7 +204,8 @@ Deno.serve(async (req) => {
             service_id: bookingData.serviceId,
             scheduled_date: bookingData.scheduledDate,
             duration_hours: bookingData.durationHours,
-            address: transformAddressToDb(bookingData.address),
+            address: addressData,
+            location: locationPoint,
             total_amount: totalAmount,
             payment_method: bookingData.paymentMethod,
             special_instructions: bookingData.specialInstructions,

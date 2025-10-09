@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:shared/theme/app_theme.dart';
 import '../../../core/models/job.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/timezone_utils.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
@@ -206,7 +207,7 @@ class JobCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  DateFormat('dd MMM yyyy').format(job.scheduledDate),
+                  DateFormat('dd MMM yyyy').format(TimezoneUtils.convertUtcToBookingTime(job.scheduledDate)),
                   style: const TextStyle(fontSize: 14),
                 ),
               ),

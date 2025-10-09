@@ -76,4 +76,12 @@ abstract class ApiService {
 
   @POST('/customer-bookings/ratings')
   Future<ApiResponse> rateService(@Body() Map<String, dynamic> request);
+
+  @GET('/customer-preferred-partners')
+  Future<ApiResponse> getPreferredPartners(
+    @Query('serviceId') String serviceId,
+    @Query('scheduledDate') String scheduledDate,
+    @Query('durationHours') double durationHours,
+    @Query('limit') int? limit,
+  );
 }

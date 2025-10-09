@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:homegenie_app/core/utils/timezone_utils.dart';
 import 'package:shared/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../../../address/providers/address_provider.dart';
 import '../../../booking/providers/booking_provider.dart';
 import '../../../services/providers/services_provider.dart';
+
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -400,10 +402,13 @@ class _BookingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(serviceByIdProvider(booking.service_id));
-    final dateFormat = DateFormat('EEE, dd MMM');
-    final timeFormat = DateFormat('hh:mm a');
     final partner = booking.partner;
     final hasPartner = partner != null && booking.status != 'pending';
+
+    // Convert UTC booking time to IST for display
+    final istDateTime = TimezoneUtils.convertUtcToBookingTime(booking.scheduled_date);
+    final dateFormat = DateFormat('EEE, dd MMM');
+    final timeFormat = DateFormat('hh:mm a');
 
     return InkWell(
       onTap: () {
@@ -444,7 +449,7 @@ class _BookingCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${dateFormat.format(booking.scheduled_date)} - ${timeFormat.format(booking.scheduled_date)}',
+                        '${dateFormat.format(istDateTime)} - ${timeFormat.format(istDateTime)}',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.textSecondary.withOpacity(0.6),

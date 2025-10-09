@@ -3,6 +3,7 @@ import '../../../core/models/booking.dart';
 import '../../../core/models/address.dart';
 import '../../../core/network/api_service.dart';
 import '../../../core/providers/api_provider.dart';
+import '../../../core/utils/timezone_utils.dart';
 
 // Booking State for creating a new booking
 class BookingState {
@@ -14,6 +15,7 @@ class BookingState {
   final String? paymentMethod;
   final String? specialInstructions;
   final double? totalAmount;
+  final String? preferredPartnerId;
 
   const BookingState({
     this.serviceId,
@@ -24,6 +26,7 @@ class BookingState {
     this.paymentMethod,
     this.specialInstructions,
     this.totalAmount,
+    this.preferredPartnerId,
   });
 
   BookingState copyWith({
@@ -35,6 +38,7 @@ class BookingState {
     String? paymentMethod,
     String? specialInstructions,
     double? totalAmount,
+    String? preferredPartnerId,
   }) {
     return BookingState(
       serviceId: serviceId ?? this.serviceId,
@@ -45,6 +49,7 @@ class BookingState {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       specialInstructions: specialInstructions ?? this.specialInstructions,
       totalAmount: totalAmount ?? this.totalAmount,
+      preferredPartnerId: preferredPartnerId ?? this.preferredPartnerId,
     );
   }
 
@@ -86,6 +91,10 @@ class BookingNotifier extends StateNotifier<BookingState> {
     state = state.copyWith(specialInstructions: instructions);
   }
 
+  void setPreferredPartner(String? partnerId) {
+    state = state.copyWith(preferredPartnerId: partnerId);
+  }
+
   Future<String?> createBooking(WidgetRef ref) async {
     // Validate required fields
     if (state.serviceId == null ||
@@ -113,6 +122,7 @@ class BookingNotifier extends StateNotifier<BookingState> {
         }
       }
 
+      // Create DateTime with selected date and time
       final scheduledDateTime = DateTime(
         state.selectedDate!.year,
         state.selectedDate!.month,
@@ -121,8 +131,9 @@ class BookingNotifier extends StateNotifier<BookingState> {
         minute,
       );
 
-      // Convert to UTC and ensure proper ISO 8601 format with timezone
-      final scheduledDateTimeUtc = scheduledDateTime.toUtc();
+      // IMPORTANT: Convert to UTC treating the time as IST (India timezone)
+      // This ensures booking times are always in India timezone regardless of device timezone
+      final scheduledDateTimeUtc = TimezoneUtils.convertBookingTimeToUtc(scheduledDateTime);
 
       // Prepare address data in camelCase format
       final addressData = state.selectedAddress != null
@@ -153,6 +164,10 @@ class BookingNotifier extends StateNotifier<BookingState> {
       // Add optional fields only if they have values
       if (state.specialInstructions != null && state.specialInstructions!.isNotEmpty) {
         requestData['specialInstructions'] = state.specialInstructions;
+      }
+
+      if (state.preferredPartnerId != null) {
+        requestData['preferredPartnerId'] = state.preferredPartnerId;
       }
 
       print('📤 Creating booking with data: $requestData');

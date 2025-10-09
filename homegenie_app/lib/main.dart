@@ -8,9 +8,13 @@ import 'core/storage/storage_service.dart';
 import 'core/router/app_router.dart';
 import 'core/services/health_check_service.dart';
 import 'core/constants/app_constants.dart';
+import 'core/utils/timezone_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize timezone database for IST conversions
+  TimezoneUtils.initialize();
 
   // Initialize storage
   await StorageService.init();

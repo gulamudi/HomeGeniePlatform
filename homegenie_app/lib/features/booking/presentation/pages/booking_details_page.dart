@@ -5,6 +5,7 @@ import 'package:shared/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../../providers/booking_provider.dart';
 import '../../../services/providers/services_provider.dart';
+import '../../../../core/utils/timezone_utils.dart';
 
 class BookingDetailsPage extends ConsumerWidget {
   final String bookingId;
@@ -99,8 +100,7 @@ class BookingDetailsPage extends ConsumerWidget {
                   _buildInfoCard(
                     icon: Icons.calendar_today,
                     title: 'Date & Time',
-                    value: DateFormat('MMMM d, yyyy, h:mm a')
-                        .format(booking.scheduled_date),
+                    value: TimezoneUtils.formatBookingTime(booking.scheduled_date),
                   ),
                   const SizedBox(height: 12),
 

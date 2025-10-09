@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/preferred_partners_provider.dart';
 import '../../../services/providers/services_provider.dart';
 
 class BookingCheckoutPage extends ConsumerStatefulWidget {
@@ -161,6 +162,10 @@ class _BookingCheckoutPageState extends ConsumerState<BookingCheckoutPage> {
                     ),
                     const SizedBox(height: 24),
                   ],
+
+                  // Preferred Partner Section
+                  _buildPreferredPartnersSection(ref),
+                  const SizedBox(height: 24),
 
                   // Payment Method Section
                   const Text(
@@ -392,5 +397,151 @@ class _BookingCheckoutPageState extends ConsumerState<BookingCheckoutPage> {
     parts.add(address.area);
     parts.add(address.city);
     return parts.join(', ');
+  }
+
+  Widget _buildPreferredPartnersSection(WidgetRef ref) {
+    final preferredPartnersAsync = ref.watch(preferredPartnersProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Preferred Partner (Optional)',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        preferredPartnersAsync.when(
+          data: (partners) {
+            if (partners.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            final bookingState = ref.watch(bookingProvider);
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Preferred Partners List
+                ...partners.map((partner) {
+                  final isSelected = bookingState.preferredPartnerId == partner.id;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      border: isSelected
+                          ? Border.all(color: AppTheme.primaryBlue, width: 2)
+                          : null,
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        ref.read(bookingProvider.notifier).setPreferredPartner(
+                              isSelected ? null : partner.id,
+                            );
+                      },
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            // Avatar
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
+                              backgroundImage: partner.avatarUrl != null
+                                  ? NetworkImage(partner.avatarUrl!)
+                                  : null,
+                              child: partner.avatarUrl == null
+                                  ? Text(
+                                      partner.name[0].toUpperCase(),
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.primaryBlue,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 16),
+                            // Partner Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    partner.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star,
+                                        size: 16,
+                                        color: AppTheme.warningYellow,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${partner.rating}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text(
+                                        '•',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${partner.totalJobs} services',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Radio button
+                            Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_unchecked,
+                              color: isSelected
+                                  ? AppTheme.primaryBlue
+                                  : AppTheme.textHint,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            );
+          },
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (error, stack) => const SizedBox.shrink(),
+        ),
+      ],
+    );
   }
 }

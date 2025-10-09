@@ -26,10 +26,7 @@ Deno.serve(async (req) => {
         // Get specific service details
         const { data: service, error } = await supabase
           .from('services')
-          .select(`
-            *,
-            service_pricing_tiers(*)
-          `)
+          .select('*')
           .eq('id', serviceId)
           .eq('is_active', true)
           .single();
@@ -52,10 +49,7 @@ Deno.serve(async (req) => {
 
         let query = supabase
           .from('services')
-          .select(`
-            *,
-            service_pricing_tiers(*)
-          `, { count: 'exact' })
+          .select('*', { count: 'exact' })
           .eq('is_active', true);
 
         // Apply filters

@@ -9,6 +9,7 @@ import '../../../core/constants/app_constants.dart';
 import '../providers/job_details_provider.dart';
 import '../providers/job_actions_provider.dart';
 import '../../home/providers/jobs_provider.dart';
+import '../../../core/utils/timezone_utils.dart';
 
 class JobDetailsScreen extends ConsumerWidget {
   final String jobId;
@@ -246,7 +247,7 @@ class JobDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    '${DateFormat('MMMM dd, yyyy').format(job.scheduledDate)}, ${_getFormattedTime(job)}',
+                    '${DateFormat('MMMM dd, yyyy').format(TimezoneUtils.convertUtcToBookingTime(job.scheduledDate))}, ${_getFormattedTime(job)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 15,
