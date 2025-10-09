@@ -67,9 +67,9 @@ class ProfileScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Text(
-                              '125 Jobs Completed',
-                              style: TextStyle(
+                            Text(
+                              '${authState.partner?.totalJobs ?? 0} Jobs Completed',
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),
@@ -81,9 +81,9 @@ class ProfileScreen extends ConsumerWidget {
                               size: 16,
                             ),
                             const SizedBox(width: 4),
-                            const Text(
-                              '4.8 Rating',
-                              style: TextStyle(
+                            Text(
+                              '${authState.partner?.rating?.toStringAsFixed(1) ?? '0.0'} Rating',
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),

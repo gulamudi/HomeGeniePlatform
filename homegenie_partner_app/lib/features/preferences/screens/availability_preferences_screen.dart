@@ -163,36 +163,63 @@ return Scaffold(
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: Weekday.values.map((day) {
-                        final isSelected = selectedWeekdays.contains(day.value);
-                        return FilterChip(
-                          label: Text(day.shortName),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedWeekdays.add(day.value);
-                                selectedWeekdays.sort();
-                              } else {
-                                selectedWeekdays.remove(day.value);
-                              }
-                            });
-                          },
-                          selectedColor: AppTheme.primaryBlue.withOpacity(0.2),
-                          checkmarkColor: AppTheme.primaryBlue,
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? AppTheme.primaryBlue
-                                : AppTheme.textSecondary,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
+                    // Using Wrap with calculated widths to evenly distribute items
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const int maxColumns = 4;
+                        const double itemSpacing = 8.0;
+                        final int columns = (constraints.maxWidth ~/ 100).clamp(1, maxColumns);
+                        final double totalSpacing = itemSpacing * (columns - 1);
+                        final double itemWidth = (constraints.maxWidth - totalSpacing) / columns;
+
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: Weekday.values.map((day) {
+                            final isSelected = selectedWeekdays.contains(day.value);
+                            return SizedBox(
+                              width: itemWidth,
+                              child: Center(
+                                child: FilterChip(
+                                  label: Text(
+                                    day.shortName,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? AppTheme.primaryBlue
+                                          : AppTheme.textSecondary,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  onSelected: (selected) {
+                                    setState(() {
+                                      if (selected) {
+                                        selectedWeekdays.add(day.value);
+                                        selectedWeekdays.sort();
+                                      } else {
+                                        selectedWeekdays.remove(day.value);
+                                      }
+                                    });
+                                  },
+                                  selectedColor: AppTheme.primaryBlue.withOpacity(0.2),
+                                  checkmarkColor: AppTheme.primaryBlue,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      color: isSelected 
+                                        ? AppTheme.primaryBlue 
+                                        : const Color(0xFFE5E7EB),
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         );
-                      }).toList(),
+                      },
                     ),
                   ],
                 ),
@@ -266,6 +293,54 @@ return Scaffold(
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Availability Status Section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Available for Bookings',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Accept new job requests',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: isAvailable,
+                      onChanged: (value) {
+                        setState(() {
+                          isAvailable = value;
+                        });
+                      },
+                      activeColor: AppTheme.primaryBlue,
                     ),
                   ],
                 ),
