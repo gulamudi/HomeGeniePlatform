@@ -27,15 +27,6 @@ class TermsOfServiceScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Implementation in progress',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary,
-              ),
-            ),
           ],
         ),
       ),

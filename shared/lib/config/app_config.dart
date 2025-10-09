@@ -20,7 +20,7 @@ class AppConfig {
   // ==========================================
   // 🔧 CHANGE THIS TO SWITCH ENVIRONMENT
   // ==========================================
-  static const Environment currentEnvironment = Environment.local;
+  static const Environment currentEnvironment = Environment.production;
   // ==========================================
 
   // Environment configurations
