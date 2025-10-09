@@ -108,10 +108,9 @@ class _AvailabilityPreferencesScreenState
   Widget build(BuildContext context) {
     final prefsAsync = ref.watch(partnerPreferencesProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -119,11 +118,10 @@ class _AvailabilityPreferencesScreenState
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

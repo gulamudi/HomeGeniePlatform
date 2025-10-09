@@ -100,9 +100,8 @@ class _ServicePreferencesScreenState
     final serviceAreasAsync = ref.watch(serviceAreasProvider(null));
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -110,11 +109,10 @@ class _ServicePreferencesScreenState
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimary,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
