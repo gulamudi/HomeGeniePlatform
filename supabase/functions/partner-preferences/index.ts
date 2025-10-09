@@ -141,6 +141,10 @@ Deno.serve(async (req) => {
       }
 
       // Update partner profile
+      console.log('📝 Executing UPDATE on partner_profiles...');
+      console.log('   user_id:', user.id);
+      console.log('   updates:', JSON.stringify(updates, null, 2));
+
       const { data, error } = await supabase
         .from('partner_profiles')
         .update(updates)
@@ -150,13 +154,26 @@ Deno.serve(async (req) => {
 
       if (error) {
         console.error('❌ [partnerPreferences] Update error:', error);
+        console.error('   Error code:', error.code);
+        console.error('   Error message:', error.message);
+        console.error('   Error details:', error.details);
         return createErrorResponse(
-          'Failed to update preferences',
+          `Failed to update preferences: ${error.message}`,
           HTTP_STATUS.INTERNAL_SERVER_ERROR
         );
       }
 
+      if (!data) {
+        console.error('❌ [partnerPreferences] No data returned after update');
+        console.error('   This might mean the partner_profiles row does not exist for user:', user.id);
+        return createErrorResponse(
+          'Partner profile not found. Please contact support.',
+          HTTP_STATUS.NOT_FOUND
+        );
+      }
+
       console.log('✅ [partnerPreferences] Preferences updated successfully');
+      console.log('   Updated data:', JSON.stringify(data, null, 2));
 
       return createResponse(
         {

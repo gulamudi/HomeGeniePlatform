@@ -13,19 +13,27 @@ class PreferencesService {
       final response = await _apiClient.get('/partner-preferences');
 
       if (response.statusCode == 200) {
-        // Backend now guarantees non-null objects for availability and jobPreferences
-        final data = response.data as Map<String, dynamic>?;
+        // Backend wraps response in { success, data } structure
+        final responseBody = response.data as Map<String, dynamic>?;
 
-        if (data == null) {
-          throw Exception('Received null response data');
+        if (responseBody == null) {
+          throw Exception('Received null response');
         }
 
+        // Extract the actual data from the wrapper
+        final data = responseBody['data'] as Map<String, dynamic>?;
+
+        if (data == null) {
+          throw Exception('Received null data in response');
+        }
+
+        print('📥 Received preferences: $data');
         return PartnerPreferences.fromJson(data);
       } else {
         throw Exception('Failed to load preferences: ${response.data}');
       }
     } catch (e) {
-      print('Error getting preferences: $e');
+      print('❌ Error getting preferences: $e');
       rethrow;
     }
   }
@@ -34,18 +42,35 @@ class PreferencesService {
   Future<PartnerPreferences> updatePreferences(
       PartnerPreferences preferences) async {
     try {
+      print('📤 Updating preferences: ${preferences.toApiJson()}');
+
       final response = await _apiClient.put(
         '/partner-preferences',
         data: preferences.toApiJson(),
       );
 
       if (response.statusCode == 200) {
-        return PartnerPreferences.fromJson(response.data);
+        // Backend wraps response in { success, data } structure
+        final responseBody = response.data as Map<String, dynamic>?;
+
+        if (responseBody == null) {
+          throw Exception('Received null response');
+        }
+
+        // Extract the actual data from the wrapper
+        final data = responseBody['data'] as Map<String, dynamic>?;
+
+        if (data == null) {
+          throw Exception('Received null data in response');
+        }
+
+        print('✅ Preferences updated successfully');
+        return PartnerPreferences.fromJson(data);
       } else {
         throw Exception('Failed to update preferences: ${response.data}');
       }
     } catch (e) {
-      print('Error updating preferences: $e');
+      print('❌ Error updating preferences: $e');
       rethrow;
     }
   }
@@ -59,12 +84,27 @@ class PreferencesService {
       );
 
       if (response.statusCode == 200) {
-        return ServiceAreasResponse.fromJson(response.data);
+        // Backend wraps response in { success, data } structure
+        final responseBody = response.data as Map<String, dynamic>?;
+
+        if (responseBody == null) {
+          throw Exception('Received null response');
+        }
+
+        // Extract the actual data from the wrapper
+        final data = responseBody['data'] as Map<String, dynamic>?;
+
+        if (data == null) {
+          throw Exception('Received null data in response');
+        }
+
+        print('📥 Received ${data['count']} service areas');
+        return ServiceAreasResponse.fromJson(data);
       } else {
         throw Exception('Failed to load service areas: ${response.data}');
       }
     } catch (e) {
-      print('Error getting service areas: $e');
+      print('❌ Error getting service areas: $e');
       rethrow;
     }
   }
