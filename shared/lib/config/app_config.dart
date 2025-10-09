@@ -60,6 +60,18 @@ class AppConfig {
   /// Default OTP for testing (only used when enableOtpVerification = false)
   static const String testOtp = '123456';
 
+  /// TEST MODE for partner assignment and notifications
+  /// When true, disables smart ranking logic and shows all available partners
+  /// Currently used for:
+  /// - assign-booking-to-partner function: Fetches ALL verified partners instead of ranked partners
+  /// - preferred-partners function: Returns max 3 partners for UI testing
+  /// - Partner notifications: Sends to all partners regardless of ranking
+  /// Set to false for production to enable intelligent partner matching
+  static const bool enableTestMode = true; // Set to false for production
+
+  /// Maximum number of preferred partners to show in TEST_MODE
+  static const int maxPreferredPartnersTestMode = 3;
+
   /// Enable real-time notifications
   static const bool enableNotifications = true;
 

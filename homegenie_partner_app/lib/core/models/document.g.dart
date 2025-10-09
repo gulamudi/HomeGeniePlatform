@@ -8,28 +8,28 @@ part of 'document.dart';
 
 Document _$DocumentFromJson(Map<String, dynamic> json) => Document(
       id: json['id'] as String,
-      partnerId: json['partner_id'] as String,
-      documentType: json['document_type'] as String,
-      documentNumber: json['document_number'] as String,
-      frontImageUrl: json['front_image_url'] as String?,
-      backImageUrl: json['back_image_url'] as String?,
-      verificationStatus: json['verification_status'] as String,
-      rejectionReason: json['rejection_reason'] as String?,
-      uploadedAt: DateTime.parse(json['uploaded_at'] as String),
-      verifiedAt: json['verified_at'] == null
+      partnerId: json['partnerId'] as String,
+      documentType: json['documentType'] as String,
+      documentNumber: json['documentNumber'] as String,
+      frontImageUrl: json['frontImageUrl'] as String?,
+      backImageUrl: json['backImageUrl'] as String?,
+      verificationStatus: json['verificationStatus'] as String,
+      rejectionReason: json['rejectionReason'] as String?,
+      uploadedAt: DateTime.parse(json['uploadedAt'] as String),
+      verifiedAt: json['verifiedAt'] == null
           ? null
-          : DateTime.parse(json['verified_at'] as String),
+          : DateTime.parse(json['verifiedAt'] as String),
     );
 
 Map<String, dynamic> _$DocumentToJson(Document instance) => <String, dynamic>{
       'id': instance.id,
-      'partner_id': instance.partnerId,
-      'document_type': instance.documentType,
-      'document_number': instance.documentNumber,
-      'front_image_url': instance.frontImageUrl,
-      'back_image_url': instance.backImageUrl,
-      'verification_status': instance.verificationStatus,
-      'rejection_reason': instance.rejectionReason,
-      'uploaded_at': instance.uploadedAt.toIso8601String(),
-      'verified_at': instance.verifiedAt?.toIso8601String(),
+      'partnerId': instance.partnerId,
+      'documentType': instance.documentType,
+      'documentNumber': instance.documentNumber,
+      'frontImageUrl': instance.frontImageUrl,
+      'backImageUrl': instance.backImageUrl,
+      'verificationStatus': instance.verificationStatus,
+      'rejectionReason': instance.rejectionReason,
+      'uploadedAt': instance.uploadedAt.toIso8601String(),
+      'verifiedAt': instance.verifiedAt?.toIso8601String(),
     };

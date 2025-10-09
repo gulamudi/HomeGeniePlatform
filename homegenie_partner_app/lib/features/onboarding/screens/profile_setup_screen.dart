@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../main.dart';
 import '../providers/onboarding_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -59,12 +58,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         serviceTypes: _selectedServices,
       );
 
-      // Mark as onboarded
-      final storage = ref.read(storageServiceProvider);
-      await storage.setOnboarded(true);
-
+      // Navigate to detailed preferences setup
       if (mounted) {
-        context.go(AppConstants.routeHome);
+        context.go(AppConstants.routeInitialSetup);
       }
     } catch (e) {
       if (mounted) {

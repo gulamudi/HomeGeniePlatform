@@ -1,7 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-
-// TEST MODE: When true, sends notifications to ALL partners instead of using ranking logic
-const TEST_MODE = true // Set to false for production
+import { AppConfig } from '../_shared/config.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -183,13 +181,13 @@ Deno.serve(async (req) => {
     const expirySeconds = parseInt(settingsExpiry || '30')
 
     console.log(`⚙️ [assignBooking] Settings - Batch size: ${batchSize}, Expiry: ${expirySeconds} seconds`)
-    console.log(`🧪 [assignBooking] TEST_MODE: ${TEST_MODE}`)
+    console.log(`🧪 [assignBooking] TEST_MODE: ${AppConfig.TEST_MODE}`)
 
     // Rank partners for this booking (or get all partners in test mode)
     let rankedPartners: RankedPartner[]
     let rankError: any = null
 
-    if (TEST_MODE) {
+    if (AppConfig.TEST_MODE) {
       // TEST MODE: Get ALL partners who can provide this service category
       console.log('🧪 [TEST_MODE] Fetching ALL partners for testing...')
       console.log('🧪 [TEST_MODE] Service category:', booking.service?.category)

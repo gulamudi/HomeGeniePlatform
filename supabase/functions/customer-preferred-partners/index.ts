@@ -1,5 +1,6 @@
 import { corsHeaders, handleCORS, createResponse, createErrorResponse, createSupabaseClient, getAuthUser } from '../_shared/utils.ts';
 import { HTTP_STATUS, API_MESSAGES } from '../_shared/types.ts';
+import { AppConfig } from '../_shared/config.ts';
 
 /**
  * Get preferred partners for a customer
@@ -42,7 +43,12 @@ Deno.serve(async (req) => {
       const serviceId = url.searchParams.get('serviceId');
       const scheduledDate = url.searchParams.get('scheduledDate');
       const durationHours = parseFloat(url.searchParams.get('durationHours') || '2');
-      const limit = parseInt(url.searchParams.get('limit') || '3');
+
+      // In TEST_MODE, enforce max limit for UI testing
+      const requestedLimit = parseInt(url.searchParams.get('limit') || '3');
+      const limit = AppConfig.TEST_MODE
+        ? Math.min(requestedLimit, AppConfig.MAX_PREFERRED_PARTNERS_TEST_MODE)
+        : requestedLimit;
 
       if (!serviceId || !scheduledDate) {
         return createErrorResponse(
@@ -56,6 +62,7 @@ Deno.serve(async (req) => {
       console.log('   Scheduled Date:', scheduledDate);
       console.log('   Duration:', durationHours, 'hours');
       console.log('   Limit:', limit);
+      console.log(`🧪 [preferredPartners] TEST_MODE: ${AppConfig.TEST_MODE}`);
 
       // Call database function to get preferred partners
       const { data: preferredPartners, error } = await supabase.rpc('get_preferred_partners', {

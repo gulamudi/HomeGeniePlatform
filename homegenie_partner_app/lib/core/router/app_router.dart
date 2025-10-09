@@ -13,6 +13,9 @@ import '../../features/jobs/screens/cancel_job_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/support_screen.dart';
 import '../../features/jobs/screens/job_history_screen.dart';
+import '../../features/preferences/screens/availability_preferences_screen.dart';
+import '../../features/preferences/screens/service_preferences_screen.dart';
+import '../../features/preferences/screens/preferences_screen.dart';
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
 
@@ -132,6 +135,18 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeSupport,
         builder: (context, state) => const SupportScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeAvailabilityPreferences,
+        builder: (context, state) => const AvailabilityPreferencesScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeServicePreferences,
+        builder: (context, state) => const ServicePreferencesScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeInitialSetup,
+        builder: (context, state) => const PreferencesScreen(isInitialSetup: true),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

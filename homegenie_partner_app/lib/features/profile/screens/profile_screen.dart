@@ -133,9 +133,7 @@ class ProfileScreen extends ConsumerWidget {
                       icon: Icons.schedule_outlined,
                       title: 'Availability & Time Preferences',
                       subtitle: 'Manage your working hours',
-                      onTap: () {
-                        // Navigate to availability settings
-                      },
+                      onTap: () => context.push(AppConstants.routeAvailabilityPreferences),
                       isFirst: true,
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),
@@ -144,9 +142,7 @@ class ProfileScreen extends ConsumerWidget {
                       icon: Icons.apartment_outlined,
                       title: 'Service and Building Preferences',
                       subtitle: 'Set your service locations',
-                      onTap: () {
-                        // Navigate to service preferences
-                      },
+                      onTap: () => context.push(AppConstants.routeServicePreferences),
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),
                     _buildMenuItem(
