@@ -17,6 +17,8 @@ class AppConstants {
   static const String routePaymentGuide = '/payment-guide';
   static const String routeAvailabilityPreferences = '/availability-preferences';
   static const String routeServicePreferences = '/service-preferences';
+  static const String routePrivacyPolicy = '/privacy-policy';
+  static const String routeTermsOfService = '/terms-of-service';
   static const String routeInitialSetup = '/initial-setup';
 
   // Job Status - these match the database enum values

@@ -136,10 +136,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             },
             child: ListView(
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height - 200,
-                  child: _buildEmptyState(tab),
-                ),
+                const SizedBox(height: 80),
+                _buildEmptyState(tab),
               ],
             ),
           );

@@ -203,18 +203,14 @@ class ProfileScreen extends ConsumerWidget {
                       context: context,
                       icon: Icons.privacy_tip_outlined,
                       title: 'Privacy Policy',
-                      onTap: () {
-                        // Show privacy policy
-                      },
+                      onTap: () => context.push(AppConstants.routePrivacyPolicy),
                     ),
                     const Divider(height: 1, color: Color(0xFFE5E7EB)),
                     _buildMenuItem(
                       context: context,
                       icon: Icons.gavel_outlined,
                       title: 'Terms of Service',
-                      onTap: () {
-                        // Show terms of service
-                      },
+                      onTap: () => context.push(AppConstants.routeTermsOfService),
                       isLast: true,
                     ),
                   ],

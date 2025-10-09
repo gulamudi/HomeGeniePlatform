@@ -15,6 +15,9 @@ import '../../features/profile/screens/support_screen.dart';
 import '../../features/jobs/screens/job_history_screen.dart';
 import '../../features/preferences/screens/availability_preferences_screen.dart';
 import '../../features/preferences/screens/service_preferences_screen.dart';
+import '../../features/profile/screens/payment_information_screen.dart';
+import '../../features/profile/screens/privacy_policy_screen.dart';
+import '../../features/profile/screens/terms_of_service_screen.dart';
 import '../../features/preferences/screens/preferences_screen.dart';
 import '../constants/app_constants.dart';
 import '../storage/storage_service.dart';
@@ -147,6 +150,18 @@ class AppRouter {
       GoRoute(
         path: AppConstants.routeInitialSetup,
         builder: (context, state) => const PreferencesScreen(isInitialSetup: true),
+      ),
+      GoRoute(
+        path: AppConstants.routePaymentGuide,
+        builder: (context, state) => const PaymentInformationScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routePrivacyPolicy,
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeTermsOfService,
+        builder: (context, state) => const TermsOfServiceScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

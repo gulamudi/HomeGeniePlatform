@@ -30,22 +30,14 @@ class JobHistoryScreen extends ConsumerWidget {
       body: jobsAsync.when(
         data: (jobs) {
           if (jobs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(jobsProvider(AppConstants.tabHistory));
+              },
+              child: ListView(
                 children: [
-                  Icon(
-                    Icons.history,
-                    size: 64,
-                    color: AppTheme.iconSecondary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No job history yet',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppTheme.textSecondary,
-                        ),
-                  ),
+                  const SizedBox(height: 80),
+                  _buildEmptyState(context),
                 ],
               ),
             );
@@ -91,6 +83,50 @@ class JobHistoryScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/empty_history.png',
+              width: 200,
+              height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.history,
+                  size: 64,
+                  color: AppTheme.iconSecondary,
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No job history yet',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Completed jobs will show up here',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
