@@ -195,32 +195,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
         print('✅ Existing partner user found');
       } else {
-        // User doesn't exist - create new partner user
-        print('🔨 Creating new partner user...');
+        // User doesn't exist - wait for trigger to create
+        print('⏳ User not found, waiting for database trigger...');
+        await Future.delayed(const Duration(milliseconds: 500));
 
-        final userData = {
-          'id': response.user!.id,
-          'phone': formattedPhone,
-          'user_type': 'partner',
-          'full_name': 'Partner ${formattedPhone.substring(formattedPhone.length - 4)}',
-        };
-
-        existingUser = await _supabase
+        final retryUser = await _supabase
             .from('users')
-            .insert(userData)
             .select()
-            .single();
-
-        print('✅ Partner user created');
-
-        // Create partner profile as well
-        await _supabase
-            .from('partner_profiles')
-            .insert({'user_id': response.user!.id})
-            .select()
+            .eq('id', response.user!.id)
             .maybeSingle();
 
-        print('✅ Partner profile created');
+        if (retryUser != null) {
+          // Check user type again after trigger
+          final userType = retryUser['user_type'];
+          if (userType != 'partner') {
+            print('❌ Phone number registered as $userType');
+            await _supabase.auth.signOut();
+            state = state.copyWith(isLoading: false);
+            throw Exception('This phone number is already registered as a Customer. Please use the Customer app to login.');
+          }
+          print('✅ User created by trigger');
+          existingUser = retryUser;
+        } else {
+          // If trigger didn't create user after retry, something is wrong
+          print('❌ Partner user was not created by trigger after waiting');
+          throw Exception('Failed to create partner user record. Please try again.');
+        }
       }
 
       // Check if partner_profile exists to determine if onboarding is needed

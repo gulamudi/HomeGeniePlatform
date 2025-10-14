@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared/config/app_config.dart';
+import 'package:shared/utils/phone_utils.dart';
 import '../../../core/models/user.dart' as app_user;
 import '../../../core/storage/storage_service.dart';
 import '../../../core/constants/app_constants.dart';
@@ -135,9 +136,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('🔐 REQUEST OTP DEBUG');
       print('📱 Input phone: $phone');
 
-      // Format phone number (add +91 if not present)
-      final formattedPhone = phone.startsWith('+') ? phone : '+91$phone';
-      print('📱 Formatted phone: $formattedPhone');
+      // Normalize phone number to E.164 format
+      final formattedPhone = PhoneUtils.normalize(phone);
+      print('📱 Normalized phone: $formattedPhone');
       print('👤 User type: $userType');
       print('═════════════════════════════════════════════════');
 
@@ -169,6 +170,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('⏳ Calling signInWithOtp...');
       await _supabase.auth.signInWithOtp(
         phone: formattedPhone,
+        data: {
+          'user_type': userType,
+        },
       );
 
       print('✅ OTP sent to: $formattedPhone');
@@ -209,8 +213,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String phoneNumber) async {
     state = state.copyWith(isLoading: true);
     try {
-      // Format phone number
-      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+91$phoneNumber';
+      // Normalize phone number to E.164 format
+      final formattedPhone = PhoneUtils.normalize(phoneNumber);
 
       // Send OTP via Supabase Auth (works with test OTP from config.toml)
       await _supabase.auth.signInWithOtp(phone: formattedPhone);
@@ -234,8 +238,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyOtp(String phoneNumber, String otp) async {
     state = state.copyWith(isLoading: true);
     try {
-      // Format phone number
-      final formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : '+91$phoneNumber';
+      // Normalize phone number to E.164 format
+      final formattedPhone = PhoneUtils.normalize(phoneNumber);
 
       // Verify OTP with Supabase (works with test OTP from config.toml)
       final response = await _supabase.auth.verifyOTP(
@@ -295,29 +299,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
           print('✅ User created by trigger');
           existingUser = retryUser;
         } else {
-          // Fallback: Create user manually if trigger didn't work
-          final userType = await StorageService.getString('pending_user_type') ?? 'customer';
-
-          print('🔨 Creating new user manually (trigger fallback)...');
-          print('📋 User ID: ${response.user!.id}');
-          print('📱 Phone: $formattedPhone');
-          print('👤 User type: $userType');
-
-          final userData = {
-            'id': response.user!.id,
-            'phone': formattedPhone,
-            'user_type': userType,
-            'full_name': 'User ${formattedPhone.substring(formattedPhone.length - 4)}',
-          };
-
-          final newUser = await _supabase
-              .from('users')
-              .insert(userData)
-              .select()
-              .single();
-
-          print('✅ User created manually');
-          existingUser = newUser;
+          // If trigger didn't create user after retry, something is wrong
+          print('❌ User was not created by trigger after waiting');
+          throw Exception('Failed to create user record. Please try again.');
         }
       }
 

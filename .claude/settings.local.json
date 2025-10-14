@@ -7,7 +7,13 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "WebSearch",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//Users/ettbeck/Downloads/stitch_welcome_to_homegenie/**)",
+      "Bash(supabase db execute --local \"DELETE FROM auth.users WHERE phone = ''+917777777777''; DELETE FROM public.users WHERE phone = ''+917777777777'';\")",
+      "Bash(psql:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker ps:*)",
+      "Bash(supabase db reset:*)"
     ],
     "deny": [],
     "ask": []
