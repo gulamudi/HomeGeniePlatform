@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/otp_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -32,20 +33,21 @@ class AppRouter {
 
   late final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: AppConstants.routeLogin,
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isLoggedIn = _storage.isLoggedIn();
       final isOnboarded = _storage.isOnboarded();
       final path = state.uri.path;
 
-      // If not logged in and trying to access protected route
+      // If not logged in and trying to access protected route, redirect to login
       if (!isLoggedIn &&
+          path != '/splash' &&
           path != AppConstants.routeLogin &&
           path != AppConstants.routeOtp) {
         return AppConstants.routeLogin;
       }
 
-      // If logged in but not onboarded
+      // If logged in but not onboarded, redirect to onboarding from login
       if (isLoggedIn && !isOnboarded && path == AppConstants.routeLogin) {
         return AppConstants.routeOnboarding;
       }
@@ -58,6 +60,10 @@ class AppRouter {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: AppConstants.routeLogin,
         builder: (context, state) => const LoginScreen(),
